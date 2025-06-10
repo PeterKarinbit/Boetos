@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { google } from 'googleapis';
 import { AppDataSource } from '../data-source';
 import { User } from '../entity/User';
@@ -8,8 +8,12 @@ const router = Router();
 const userRepository = AppDataSource.getRepository(User);
 const calendarService = new CalendarService();
 
+interface AuthenticatedRequest extends Request {
+  user?: User;
+}
+
 // Authentication middleware
-const requireAuth = (req: any, res: any, next: any) => {
+const requireAuth = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   console.log('Auth check - req.user:', req.user ? 'Present' : 'Missing');
   if (!req.user) {
     return res.status(401).json({ error: 'Not authenticated' });
@@ -17,7 +21,20 @@ const requireAuth = (req: any, res: any, next: any) => {
   next();
 };
 
-router.get('/events', requireAuth, async (req, res) => {
+interface CalendarEvent {
+  summary: string;
+  description?: string;
+  start: {
+    dateTime: string;
+    timeZone: string;
+  };
+  end: {
+    dateTime: string;
+    timeZone: string;
+  };
+}
+
+router.get('/events', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   console.log('Events route called');
   const user = req.user as User;
   
@@ -38,8 +55,8 @@ router.get('/events', requireAuth, async (req, res) => {
 
   // Define a reasonable time range for fetching events
   const now = new Date();
-  const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString(); // From beginning of previous month
-  const timeMax = new Date(now.getFullYear(), now.getMonth() + 2, 0).toISOString(); // To end of next month
+  const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+  const timeMax = new Date(now.getFullYear(), now.getMonth() + 2, 0).toISOString();
 
   let calendars: any[] | undefined;
 
@@ -70,36 +87,32 @@ router.get('/events', requireAuth, async (req, res) => {
             calendarId: cal.id,
             timeMin: timeMin,
             timeMax: timeMax,
-            maxResults: 100, // Increased maxResults
+            maxResults: 100,
             singleEvents: true,
             orderBy: 'startTime',
           });
           if (eventsResponse.data.items) {
-            // Attach calendarId to each event for frontend filtering
             const eventsWithCalendarId = eventsResponse.data.items.map(event => ({
               ...event,
               calendarId: cal.id,
-              calendarSummary: cal.summary // Also include calendar summary for easier identification
+              calendarSummary: cal.summary
             }));
             allEvents = allEvents.concat(eventsWithCalendarId);
           }
         } catch (eventListError: any) {
           console.error(`Error fetching events for calendar ID ${cal.id}:`, JSON.stringify(eventListError, null, 2));
-          // Continue to next calendar even if one fails
+          continue;
         }
       }
     }
 
     console.log('Total events fetched from all calendars:', allEvents.length);
-    console.log('Full aggregated Google Calendar API data (first 5 items):', JSON.stringify(allEvents.slice(0, 5), null, 2));
     res.json(allEvents);
 
   } catch (error: any) {
-    console.error('Calendar API error:', JSON.stringify(error, null, 2)); // Log full error object
+    console.error('Calendar API error:', JSON.stringify(error, null, 2));
     
-    // Handle token expiration
     if (error.code === 401 || error.message?.includes('invalid_grant')) {
-      // Try to refresh the token
       try {
         console.log('Attempting to refresh token...');
         const { credentials } = await oauth2Client.refreshAccessToken();
@@ -111,7 +124,6 @@ router.get('/events', requireAuth, async (req, res) => {
           }
           await userRepository.save(user);
           
-          // Retry the calendar request with new token
           oauth2Client.setCredentials({
             access_token: user.googleAccessToken,
             refresh_token: user.googleRefreshToken,
@@ -120,13 +132,9 @@ router.get('/events', requireAuth, async (req, res) => {
           const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
           
           let retriedEvents: any[] = [];
-          // Re-define time range for retry if needed (though timeMin/timeMax are already defined outside try/catch)
-          // const now = new Date(); // now is already defined above
-          // const retryTimeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString(); // use existing timeMin
-          // const retryTimeMax = new Date(now.getFullYear(), now.getMonth() + 2, 0).toISOString(); // use existing timeMax
 
           if (!calendars || calendars.length === 0) {
-            console.log('No calendars found for the user during retry. Cannot fetch events.');
+            console.log('No calendars found for the user during retry.');
             return res.json([]);
           }
 
@@ -137,7 +145,7 @@ router.get('/events', requireAuth, async (req, res) => {
                   calendarId: cal.id,
                   timeMin: timeMin,
                   timeMax: timeMax,
-                  maxResults: 100, // Increased maxResults
+                  maxResults: 100,
                   singleEvents: true,
                   orderBy: 'startTime',
                 });
@@ -170,9 +178,9 @@ router.get('/events', requireAuth, async (req, res) => {
 });
 
 // Create an event
-router.post('/events', requireAuth, async (req, res) => {
+router.post('/events', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user as User;
-  const { summary, description, start, end, timeZone } = req.body;
+  const { summary, description, start, end, timeZone } = req.body as CalendarEvent;
 
   if (!user.googleAccessToken) {
     return res.status(401).json({ error: 'Not connected to Google' });
@@ -197,27 +205,25 @@ router.post('/events', requireAuth, async (req, res) => {
 
   try {
     const event = {
-      summary: summary,
-      description: description,
-      start: {
-        dateTime: start, // e.g., '2025-06-20T10:00:00-07:00'
-        timeZone: timeZone || 'UTC',
-      },
-      end: {
-        dateTime: end, // e.g., '2025-06-20T10:25:00-07:00'
-        timeZone: timeZone || 'UTC',
-      },
+      summary,
+      description,
+      start,
+      end,
+      timeZone: timeZone || 'UTC'
     };
 
     const response = await calendar.events.insert({
       calendarId: 'primary',
-      requestBody: event,
+      requestBody: event
     });
 
     res.status(201).json(response.data);
   } catch (error: any) {
-    console.error('Error creating event:', JSON.stringify(error, null, 2));
-    res.status(500).json({ error: 'Failed to create event', details: error.message });
+    console.error('Error creating event:', error);
+    res.status(500).json({ 
+      error: 'Failed to create event',
+      details: error.message
+    });
   }
 });
 

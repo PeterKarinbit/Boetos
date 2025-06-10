@@ -88,9 +88,11 @@ passport.use(new GoogleStrategy(googleStrategyOptions, async (
         googleAccessToken: accessToken,
         googleRefreshToken: refreshToken,
       });
+      
+      // Save the user and wait for the result
+      user = await userRepository.save(user);
     }
     
-    await userRepository.save(user);
     return done(null, user);
   } catch (err) {
     console.error('Google OAuth error:', err);
