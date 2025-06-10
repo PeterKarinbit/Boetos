@@ -1,0 +1,167 @@
+:root {
+  /* Primary Colors */
+  --google-bg-primary: #202124;
+  --google-calendar-grid: #303134;
+  --google-text-primary: #ffffff;
+  --google-text-secondary: #9aa0a6;
+  --google-borders: #3c4043;
+
+  /* Event Colors (Google's default palette approximations) */
+  --google-event-green: #0d7377; /* Madaraka Day, Eid al-Adha */
+  --google-event-blue: #1a73e8;
+  --google-event-red: #d93025;
+  --google-event-purple: #9c27b0;
+  --google-event-orange: #f9ab00;
+  --google-event-teal: #00897b;
+
+  /* UI Elements */
+  --google-today-button: #1a73e8;
+  --google-navigation-arrows: #9aa0a6;
+  --google-selected-date: #1a73e8;
+  --google-hover-state: #3c4043;
+}
+
+body {
+  font-family: "Roboto", Arial, sans-serif;
+  background-color: var(--google-bg-primary);
+  color: var(--google-text-primary);
+}
+
+/* Overall Calendar Container */
+.rbc-calendar {
+  font-family: "Roboto", Arial, sans-serif;
+  background-color: var(--google-bg-primary);
+  color: var(--google-text-primary);
+  border: 1px solid var(--google-borders);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Header Toolbar */
+.rbc-toolbar {
+  background-color: var(--google-bg-primary);
+  border-bottom: 1px solid var(--google-borders);
+  padding: 10px 15px;
+  color: var(--google-text-primary);
+}
+
+.rbc-toolbar button {
+  color: var(--google-text-secondary);
+  background-color: transparent;
+  border: 1px solid var(--google-borders);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.rbc-toolbar button:hover {
+  background-color: var(--google-hover-state);
+  border-color: var(--google-text-secondary);
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: var(--google-today-button);
+  color: var(--google-text-primary);
+  border-color: var(--google-today-button);
+}
+
+.rbc-toolbar-label {
+  color: var(--google-text-primary);
+  font-size: 1.2em;
+  font-weight: 500;
+}
+
+/* Navigation Arrows */
+.rbc-btn-group > button {
+  color: var(--google-navigation-arrows);
+  border-color: var(--google-borders);
+}
+
+.rbc-btn-group > button:hover {
+  background-color: var(--google-hover-state);
+}
+
+/* Calendar Grid */
+.rbc-month-view,
+.rbc-time-view {
+  background-color: var(--google-bg-primary);
+  border: none;
+}
+
+.rbc-header {
+  background-color: var(--google-calendar-grid);
+  color: var(--google-text-secondary);
+  border-bottom: 1px solid var(--google-borders);
+  padding: 10px 0;
+}
+
+.rbc-row-content .rbc-row-segment {
+  border: 1px solid var(--google-borders);
+}
+
+.rbc-day-bg {
+  background-color: var(--google-calendar-grid);
+  border-right: 1px solid var(--google-borders);
+  border-bottom: 1px solid var(--google-borders);
+}
+
+.rbc-day-bg.rbc-off-range-bg {
+  background-color: #292a2d; /* Slightly different shade for off-range days */
+}
+
+/* Today's Date Highlighting */
+.rbc-day-bg.rbc-today {
+  background-color: rgba(26, 115, 232, 0.2); /* Light blue background for today */
+}
+
+.rbc-date-cell.rbc-now {
+  color: var(--google-today-button);
+  font-weight: 700;
+}
+
+/* Weekend Styling */
+.rbc-day-bg.rbc-off-range-bg:nth-child(6), /* Saturday */
+.rbc-day-bg.rbc-off-range-bg:nth-child(7), /* Sunday */
+.rbc-month-row .rbc-off-range.rbc-current,
+.rbc-month-row .rbc-current:nth-child(6), /* Saturday */
+.rbc-month-row .rbc-current:nth-child(7) { /* Sunday */
+  background-color: rgba(60, 64, 67, 0.2); /* Slightly darker shade for weekends */
+}
+
+/* Event Styling */
+.rbc-event {
+  background-color: var(--google-event-blue); /* Default event color */
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: var(--google-text-primary);
+  padding: 2px 5px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.rbc-event:hover {
+  filter: brightness(1.1); /* Slight brightness increase on hover */
+}
+
+.rbc-event-content {
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.rbc-event-label {
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Multi-day events */
+.rbc-allday-cell {
+  background-color: var(--google-calendar-grid);
+}
+
+.rbc-allday-cell .rbc-event {
+  background-color: var(--google-event-green);
+}
+
+/* Override specific element colors based on your palette */
+/* You might need to inspect the react-big-calendar DOM to find exact classes for more granular control */ 
