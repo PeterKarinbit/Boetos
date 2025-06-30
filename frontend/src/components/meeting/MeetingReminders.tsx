@@ -3,6 +3,7 @@ import { Clock, AlertTriangle, MapPin, Zap, X, Clock as ClockIcon } from 'lucide
 import { getMeetingReminders, snoozeReminder, dismissReminder } from '../../services/meetingService';
 import { useUser } from '../../contexts/UserContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { toast } from 'react-toastify';
 import { useNotificationContext } from '../../contexts/NotificationContext';
 
 type MeetingReminder = {
@@ -34,7 +35,7 @@ const MeetingReminders: React.FC = () => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const { user } = useUser();
   const { theme } = useTheme();
-  const { setHasNewNotifications } = useNotificationContext();
+  const { showError } = useNotificationContext();
 
   const fetchReminders = async () => {
     if (!user) return;
@@ -45,9 +46,8 @@ const MeetingReminders: React.FC = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load meeting reminders. Please try again later.');
-      // You can use setHasNewNotifications(true) here if you want to indicate a new notification
+      showError('Failed to load meeting reminders');
       console.error('Failed to load meeting reminders:', err);
-      });
     } finally {
       setIsLoading(false);
     }
@@ -63,15 +63,9 @@ const MeetingReminders: React.FC = () => {
     try {
       await snoozeReminder(eventId, minutes);
       await fetchReminders();
-      showNotification({
-        type: 'success',
-        message: `Reminder snoozed for ${minutes} minutes`,
-      });
+      toast.success(`Reminder snoozed for ${minutes} minutes`);
     } catch {
-      showNotification({
-        type: 'error',
-        message: 'Failed to snooze reminder',
-      });
+      toast.error('Failed to snooze reminder');
     }
   };
 

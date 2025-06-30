@@ -392,10 +392,40 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-gradient-to-br from-black via-[#181818] to-[#0a0a0a] relative overflow-hidden">
-      {/* Bolt white badge in top right */}
-      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 50 }}>
-        <img src="/Bolt white.jpg" alt="Bolt.new Hackathon Badge" style={{ height: 40, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
-      </div>
+      {/* Bolt.black badge in top right with hyperlink */}
+      <a
+        href="https://bolt.new"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: 'fixed',
+          top: 16,
+          right: 16,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 48,
+          height: 48,
+          borderRadius: '50%',
+          background: '#181818',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          border: '2px solid #FF6600',
+          transition: 'box-shadow 0.2s'
+        }}
+        title="Bolt.new Hackathon Badge"
+      >
+        <img
+          src="/assets/images/bolt-black.jpg"
+          alt="Bolt.new Hackathon Badge"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: '50%',
+            objectFit: 'cover'
+          }}
+        />
+      </a>
       {/* Left: Glassy login/signup form card */}
       <div className="relative z-10 flex-1 flex items-center justify-center p-4 md:p-12">
         <div className="w-full max-w-md bg-gradient-to-br from-[#181818]/90 to-[#2d1a00]/90 rounded-3xl shadow-2xl border border-[#FF6600]/30 backdrop-blur-xl p-8 md:p-10 flex flex-col gap-4" style={{ boxShadow: '0 0 32px 8px #FF660033, 0 0 64px 16px #fff1' }}>
