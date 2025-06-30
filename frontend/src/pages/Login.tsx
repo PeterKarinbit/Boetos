@@ -1,7 +1,32 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useUser } from '../contexts/UserContext';
+import React, { useState, useEffect, useRef } from 'react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Sun, Moon, Zap, Cpu, Globe, Brain, Clock, MessageSquare, Calendar } from 'lucide-react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { motion, useAnimation, useInView, AnimatePresence } from 'framer-motion';
+
+// Enhanced Particle type with AI properties
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  opacity: number;
+  size: number;
+  type: 'thought' | 'memory' | 'data' | 'insight';
+  color: string;
+}
+
+// AI Avatar types
+interface AIAvatar {
+  id: string;
+  x: number;
+  y: number;
+  size: number;
+  type: 'orb' | 'assistant' | 'insight' | 'helper';
+  rotation: number;
+  pulsePhase: number;
+}
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,60 +37,333 @@ const AuthPage = () => {
     password: '',
     confirmPassword: ''
   });
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [theme, setTheme] = useState('dark');
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isFormFocused, setIsFormFocused] = useState(false);
+  const [breathingPhase, setBreathingPhase] = useState(0);
+  const [aiGreeting, setAiGreeting] = useState('');
+  const [greetingIndex, setGreetingIndex] = useState(0);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login } = useUser();
+  // Enhanced particle system with AI types
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const [aiAvatars, setAiAvatars] = useState<AIAvatar[]>([]);
+  const [cognitiveRings, setCognitiveRings] = useState<Array<{id: number, rotation: number, scale: number}>>([]);
   
-  // Get the redirect path from location state or default to dashboard
-  const from = (location.state as any)?.from?.pathname || '/';
+  const canvasRef = useRef(null);
+  const welcomeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const formRef = useRef(null);
+  const isFormInView = useInView(formRef, { once: true, margin: '-100px' });
 
-  // Get error from query params
-  const searchParams = new URLSearchParams(location.search);
-  const errorMsg = searchParams.get('error');
+  // AI Greetings with contextual messages
+  const aiGreetings = [
+    "🧠 Good to see you again. Ready to master your day?",
+    "⚡ Your AI companion is ready to amplify your productivity.",
+    "🌌 Welcome back to your digital sanctuary of focus.",
+    "🚀 Let's transform chaos into clarity together.",
+    "💫 Your mind, enhanced. Your time, optimized."
+  ];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    // Initialize enhanced particles with AI types
+    const newParticles: Particle[] = Array.from({ length: 80 }, (_, i) => {
+      const types = ['thought', 'memory', 'data', 'insight'] as const;
+      const type = types[i % types.length];
+      const colors = {
+        thought: '#FFD580',
+        memory: '#4ADE80', 
+        data: '#60A5FA',
+        insight: '#F59E0B'
+      };
+      
+      return {
+      id: i,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        opacity: Math.random() * 0.6 + 0.2,
+        size: Math.random() * 3 + 1,
+        type,
+        color: colors[type]
+      };
+    });
+    setParticles(newParticles);
+
+    // Initialize AI Avatars
+    const newAvatars: AIAvatar[] = [
+      { id: 'orb', x: 100, y: 100, size: 40, type: 'orb', rotation: 0, pulsePhase: 0 },
+      { id: 'assistant', x: window.innerWidth - 120, y: 80, size: 35, type: 'assistant', rotation: 0, pulsePhase: 0.5 },
+      { id: 'insight', x: window.innerWidth - 150, y: window.innerHeight - 150, size: 50, type: 'insight', rotation: 0, pulsePhase: 0.8 },
+      { id: 'helper1', x: 150, y: window.innerHeight - 120, size: 25, type: 'helper', rotation: 0, pulsePhase: 0.3 },
+      { id: 'helper2', x: 200, y: 200, size: 20, type: 'helper', rotation: 0, pulsePhase: 0.7 },
+    ];
+    setAiAvatars(newAvatars);
+
+    // Initialize cognitive rings
+    const newRings = Array.from({ length: 5 }, (_, i) => ({
+      id: i,
+      rotation: i * 72,
+      scale: 1 + (i * 0.1)
+    }));
+    setCognitiveRings(newRings);
+
+    // Set initial AI greeting
+    setAiGreeting(aiGreetings[0]);
+  }, []);
+
+  // Breathing animation
+  useEffect(() => {
+    const breathingInterval = setInterval(() => {
+      setBreathingPhase(prev => (prev + 0.02) % (2 * Math.PI));
+    }, 50);
+    return () => clearInterval(breathingInterval);
+  }, []);
+
+  // AI Greeting rotation
+  useEffect(() => {
+    const greetingInterval = setInterval(() => {
+      setGreetingIndex(prev => (prev + 1) % aiGreetings.length);
+      setAiGreeting(aiGreetings[greetingIndex]);
+    }, 6000);
+    return () => clearInterval(greetingInterval);
+  }, [greetingIndex]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Enhanced particle animation with AI behavior
+  useEffect(() => {
+    const animateParticles = () => {
+      setParticles((prev: Particle[]) => prev.map(particle => {
+        // Add subtle attraction to mouse for interactive feel
+        const dx = mousePosition.x - particle.x;
+        const dy = mousePosition.y - particle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const attraction = distance < 200 ? (200 - distance) / 200 * 0.1 : 0;
+        
+        return {
+        ...particle,
+          x: (particle.x + particle.vx + dx * attraction + window.innerWidth) % window.innerWidth,
+          y: (particle.y + particle.vy + dy * attraction + window.innerHeight) % window.innerHeight,
+          opacity: particle.opacity + Math.sin(Date.now() * 0.001 + particle.id) * 0.1
+        };
+      }));
+    };
+
+    const interval = setInterval(animateParticles, 50);
+    return () => clearInterval(interval);
+  }, [mousePosition]);
+
+  // AI Avatar animation
+  useEffect(() => {
+    const animateAvatars = () => {
+      setAiAvatars(prev => prev.map(avatar => ({
+        ...avatar,
+        rotation: avatar.rotation + 0.5,
+        pulsePhase: (avatar.pulsePhase + 0.02) % (2 * Math.PI)
+      })));
+    };
+
+    const interval = setInterval(animateAvatars, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Cognitive rings animation
+  useEffect(() => {
+    const animateRings = () => {
+      setCognitiveRings(prev => prev.map(ring => ({
+        ...ring,
+        rotation: ring.rotation + 0.3,
+        scale: 1 + Math.sin(Date.now() * 0.001 + ring.id) * 0.1
+      })));
+    };
+
+    const interval = setInterval(animateRings, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  const welcomeMessages = [
+    "👋 First time here? You're about to get way more done.",
+    "🧠 Let Boetos handle reminders, so you can handle focus.",
+    "⏱️ Time-blocking, reminders, burnout tracking – all in one place."
+  ];
+  const [welcomeIndex, setWelcomeIndex] = useState(0);
+  
+  useEffect(() => {
+    if (welcomeTimeout.current) clearTimeout(welcomeTimeout.current);
+    welcomeTimeout.current = setTimeout(() => {
+      setWelcomeIndex((i) => (i + 1) % welcomeMessages.length);
+    }, 4000);
+    return () => { if (welcomeTimeout.current) clearTimeout(welcomeTimeout.current); };
+  }, [welcomeIndex]);
+
+  // Google OAuth callback handler
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      localStorage.setItem('token', token);
+      window.location.href = '/dashboard';
+    }
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  // Helper: Trigger Sidekick login event and handle response
+  async function triggerSidekickLogin(user: any) {
     try {
-      // Validate passwords match for signup
-      if (!isLogin && formData.password !== formData.confirmPassword) {
-        // Add error handling for password mismatch
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/sidekick/event`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ event: 'login', userId: user.id })
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to get Sidekick response');
+      }
+
+      const data = await res.json();
+      if (data.message) {
+        // Use a unique toastId to prevent duplicates
+        toast.info(data.message, { 
+          icon: '🤖' as any,
+          toastId: 'sidekick-greeting',
+          position: 'top-right',
+          autoClose: 6000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+
+        // If voice enabled, trigger TTS
+        if (user.voiceSettings?.voice_enabled) {
+          try {
+            const ttsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/voice/text-to-speech`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ text: data.message })
+            });
+
+            if (ttsRes.ok) {
+              const audioBlob = await ttsRes.blob();
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const audio = new Audio(audioUrl);
+              await audio.play();
+              // Clean up the URL after playing
+              URL.revokeObjectURL(audioUrl);
+            } else {
+              console.warn('TTS request failed:', await ttsRes.text());
+            }
+          } catch (ttsErr) {
+            console.warn('TTS error:', ttsErr);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Sidekick login event error:', err);
+      // Show a fallback greeting if Sidekick fails
+      toast.info(`Welcome back${user.name ? `, ${user.name}` : ''}!`, {
+        icon: '👋' as any,
+        toastId: 'fallback-greeting'
+      });
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+    
+    console.log('Login form submitted', { email: formData.email });
+
+    try {
+      // Basic validation
+      if (!formData.email || !formData.password) {
+        const errorMsg = !formData.email ? 'Email is required' : 'Password is required';
+        console.error('Validation error:', errorMsg);
+        setError(errorMsg);
+        setIsLoading(false);
         return;
       }
 
-      // Create user object matching User interface
-      const userData = {
-        id: '1', // You might want to generate this or get from your backend
-        name: formData.name,
-        email: formData.email,
-        avatar: '', // Add default avatar or get from backend
-        preferences: {
-          notificationsEnabled: true,
-          voiceCommandsEnabled: false,
-          burnoutPreventionEnabled: true,
-          focusHours: {
-            start: 9,
-            end: 17
-          }
+      console.log('Sending login request to backend...');
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password,
+        }),
+      });
+
+      console.log('Received response, status:', response.status);
+      const data = await response.json().catch(() => ({}));
+      
+      console.log('Response data:', data);
+
+      if (!response.ok) {
+        const errorMessage = data.error || 'Login failed. Please check your credentials and try again.';
+        console.error('Login failed:', { status: response.status, error: errorMessage });
+        setError(errorMessage);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!data.token) {
+        console.error('No token in response:', data);
+        setError('Authentication error: No token received');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Login successful, storing token and redirecting...');
+      // Store token and redirect
+      localStorage.setItem('token', data.token);
+      
+      // Trigger Sidekick login event if user data is available
+      if (data.user && data.user.id) {
+        console.log('Triggering Sidekick login event...');
+        try {
+          await triggerSidekickLogin(data.user);
+        } catch (sidekickError) {
+          console.error('Sidekick login event failed:', sidekickError);
+          // Don't fail the login if Sidekick fails
         }
-      };
+      }
       
-      // Call login function from UserContext
-      login(userData);
-      
-      // Navigate to the originally requested page or dashboard
-      navigate(from, { replace: true });
-    } catch (error) {
-      // Add error handling here
-      console.error('Authentication error:', error);
+      // Redirect to dashboard
+      console.log('Redirecting to dashboard...');
+      window.location.href = '/dashboard';
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Unable to connect to the server. Please check your internet connection and try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -79,220 +377,111 @@ const AuthPage = () => {
     });
   };
 
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+
+  // Get AI Avatar Icon
+  const getAvatarIcon = (type: string) => {
+    switch (type) {
+      case 'orb': return <Brain className="w-full h-full" />;
+      case 'assistant': return <Clock className="w-full h-full" />;
+      case 'insight': return <MessageSquare className="w-full h-full" />;
+      case 'helper': return <Calendar className="w-full h-full" />;
+      default: return <Zap className="w-full h-full" />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md mx-auto p-4 sm:p-8 bg-emerald-900 rounded-lg shadow-lg">
-        {/* Error Message */}
-        {errorMsg && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded text-center font-semibold">
-            {decodeURIComponent(errorMsg)}
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-gradient-to-br from-black via-[#181818] to-[#0a0a0a] relative overflow-hidden">
+      {/* Bolt white badge in top right */}
+      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 50 }}>
+        <img src="/Bolt white.jpg" alt="Bolt.new Hackathon Badge" style={{ height: 40, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
+      </div>
+      {/* Left: Glassy login/signup form card */}
+      <div className="relative z-10 flex-1 flex items-center justify-center p-4 md:p-12">
+        <div className="w-full max-w-md bg-gradient-to-br from-[#181818]/90 to-[#2d1a00]/90 rounded-3xl shadow-2xl border border-[#FF6600]/30 backdrop-blur-xl p-8 md:p-10 flex flex-col gap-4" style={{ boxShadow: '0 0 32px 8px #FF660033, 0 0 64px 16px #fff1' }}>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-[#FF6600] drop-shadow-lg text-center">Boetos</h1>
+          <p className="mb-3 text-base font-medium text-[#FF6600]/80 text-center">Your AI-powered productivity dimension.</p>
+          <p className="mb-6 text-sm text-[#FF6600]/60 text-center">
+            {isLogin ? (
+              <>Don't have an account? <button className="text-[#FF6600] hover:underline font-semibold transition-all" type="button" onClick={toggleMode}>Create Account</button></>
+            ) : (
+              <>Already have an account? <button className="text-[#FF6600] hover:underline font-semibold transition-all" type="button" onClick={toggleMode}>Log In</button></>
+            )}
+          </p>
+          {error && (
+            <div className="mb-6 p-4 rounded-xl font-semibold bg-gradient-to-r from-[#FF6600]/10 to-[#FF6600]/10 text-[#FF6600] border border-[#FF6600]/30 backdrop-blur-sm animate-error-shake relative overflow-hidden">
+              {error}
+            </div>
+          )}
+          <button type="button" onClick={() => {window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/oauth/google`;}} className="w-full flex items-center justify-center gap-3 py-4 px-6 mb-8 font-semibold rounded-xl transition-all duration-300 border border-[#FF6600]/30 backdrop-blur-md hover:shadow-xl relative overflow-hidden group bg-white/10 text-[#FF6600] hover:bg-white/20">
+            <span className="relative z-10">Continue with Google</span>
+          </button>
+          <div className="flex items-center my-6">
+            <div className="flex-grow border-t border-[#FF6600]/30"></div>
+            <span className="mx-4 text-xs px-3 py-1 rounded-full backdrop-blur-sm text-[#FF6600]/60 bg-black/20">or</span>
+            <div className="flex-grow border-t border-[#FF6600]/30"></div>
           </div>
-        )}
-        {/* Logo/Brand Section */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <img
-              src="/assets/images/boetos-logo.png"
-              alt="Boetos Logo"
-              className="w-16 h-16 rounded-2xl shadow-lg"
-            />
-          </div>
-          <h1 className="text-3xl font-bold text-emerald-100 mb-2">Boetos</h1>
-          <p className="text-emerald-200">AI Assistant for Entrepreneurs</p>
-        </div>
-
-        {/* Main Auth Card */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20">
-          {/* Tab Headers */}
-          <div className="flex bg-white/20 rounded-2xl p-1 mb-8">
-            <button
-              onClick={() => setIsLogin(true)}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
-                isLogin 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-white/80 hover:text-white'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => setIsLogin(false)}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
-                !isLogin 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-white/80 hover:text-white'
-              }`}
-            >
-              Sign Up
-            </button>
-          </div>
-
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Field - Only for signup */}
             {!isLogin && (
-              <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-medium text-white/90">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full pl-11 pr-4 py-3 bg-white/20 border border-white/30 rounded-xl focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-200 text-white placeholder-white/60"
-                    placeholder="Enter your full name"
-                    required={!isLogin}
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-medium mb-2 text-[#FF6600]/80">Name</label>
+                <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full px-4 py-4 border rounded-xl backdrop-blur-sm focus:ring-2 focus:ring-[#FF6600]/50 focus:border-[#FF6600] placeholder-[#FF6600]/40 transition-all duration-300 bg-black/30 border-[#FF6600]/30 text-[#FF6600]" placeholder="Enter your name" required={!isLogin} />
               </div>
             )}
-
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-white/90">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full pl-11 pr-4 py-3 bg-white/20 border border-white/30 rounded-xl focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-200 text-white placeholder-white/60"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-medium mb-2 text-[#FF6600]/80">Email Address</label>
+              <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full px-4 py-4 border rounded-xl backdrop-blur-sm focus:ring-2 focus:ring-[#FF6600]/50 focus:border-[#FF6600] placeholder-[#FF6600]/40 transition-all duration-300 bg-black/30 border-[#FF6600]/30 text-[#FF6600]" placeholder="Enter your email address" required />
             </div>
-
-            {/* Password Field */}
-            <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-white/90">
-                Password
-              </label>
+            <div>
+              <label className="block text-xs font-medium mb-2 text-[#FF6600]/80">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full pl-11 pr-12 py-3 bg-white/20 border border-white/30 rounded-xl focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-200 text-white placeholder-white/60"
-                  placeholder="Enter your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
-                >
+                <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleInputChange} className="w-full px-4 py-4 border rounded-xl backdrop-blur-sm focus:ring-2 focus:ring-[#FF6600]/50 focus:border-[#FF6600] placeholder-[#FF6600]/40 pr-12 transition-all duration-300 bg-black/30 border-[#FF6600]/30 text-[#FF6600]" placeholder="Enter your password" required />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 rounded-lg transition-all duration-200 hover:scale-110 text-[#FF6600]/60 hover:text-[#FF6600] hover:bg-[#FF6600]/10">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
-
-            {/* Confirm Password Field - Only for signup */}
             {!isLogin && (
-              <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-white/90">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="w-full pl-11 pr-4 py-3 bg-white/20 border border-white/30 rounded-xl focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-200 text-white placeholder-white/60"
-                    placeholder="Confirm your password"
-                    required={!isLogin}
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-medium mb-2 text-[#FF6600]/80">Confirm Password</label>
+                <input type={showPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} className="w-full px-4 py-4 border rounded-xl backdrop-blur-sm focus:ring-2 focus:ring-[#FF6600]/50 focus:border-[#FF6600] placeholder-[#FF6600]/40 transition-all duration-300 bg-black/30 border-[#FF6600]/30 text-[#FF6600]" placeholder="Confirm your password" required={!isLogin} />
               </div>
             )}
-
-            {/* Forgot Password Link - Only for login */}
-            {isLogin && (
-              <div className="text-right">
-                <button
-                  type="button"
-                  className="text-sm text-emerald-300 hover:text-white font-medium transition-colors duration-200"
-                >
-                  Forgot Password?
-                </button>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3 px-4 rounded-xl font-medium hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 flex items-center justify-center gap-2 group shadow-lg"
-            >
-              {isLogin ? 'Sign In' : 'Create Account'}
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+            <button type="submit" className="w-full py-4 px-6 font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-3 relative overflow-hidden group hover:shadow-2xl bg-[#FF6600] text-white focus:ring-2 focus:ring-[#FF6600]/50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed" disabled={isLoading}>
+              {isLoading ? <span>Loading...</span> : <span>{isLogin ? 'Log In' : 'Create Account'}</span>}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/30"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-emerald-900/50 text-white/80">Or continue with</span>
-            </div>
-          </div>
-
-          {/* Social Login Buttons */}
-          <div className="space-y-3">
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white/20 border border-white/30 rounded-xl hover:bg-white/30 transition-colors duration-200 text-white"
-              onClick={() => window.location.href = 'http://localhost:4000/api/auth/google'}
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              Continue with Google
-            </button>
-          </div>
-
-          {/* Bottom Text */}
-          <p className="text-center text-sm text-white/70 mt-8">
-            By {isLogin ? 'signing in' : 'creating an account'}, you agree to our{' '}
-            <button className="text-emerald-300 hover:text-white font-medium transition-colors duration-200">
-              Terms of Service
-            </button>{' '}
-            and{' '}
-            <button className="text-emerald-300 hover:text-white font-medium transition-colors duration-200">
-              Privacy Policy
-            </button>
-          </p>
+          <p className="mt-8 text-xs text-center text-[#FF6600]/60">By continuing, you agree to our <a href="/privacy" className="text-[#FF6600] hover:underline font-semibold transition-all">Privacy Policy</a> and <a href="/terms" className="text-[#FF6600] hover:underline font-semibold transition-all">Terms of Service</a>.</p>
+          <p className="mt-4 text-xs text-center text-[#FF6600]/40 opacity-80 animate-pulse-slow">You handle the ideas. Boetos handles the chaos.</p>
         </div>
-
-        {/* Bottom CTA */}
-        <div className="text-center mt-8">
-          <p className="text-emerald-200">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
-            <button
-              onClick={toggleMode}
-              className="text-emerald-300 hover:text-white font-medium transition-colors duration-200"
-            >
-              {isLogin ? 'Sign up for free' : 'Sign in'}
-            </button>
-          </p>
+      </div>
+      {/* Right: Animated/AI elements */}
+      <div className="relative z-10 flex-1 flex items-center justify-center p-4 md:p-12">
+        <div className="flex flex-col items-center justify-center w-full h-full">
+          <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center mb-8">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#FF6600]/60 to-[#FF6600]/40 blur-2xl animate-pulse"></div>
+            <div className="relative w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-[#FF6600] to-[#FF6600] rounded-full flex items-center justify-center shadow-2xl">
+              <Cpu className="w-16 h-16 md:w-20 md:h-20 text-white" style={{ filter: 'drop-shadow(0 0 16px #FF6600)' }} />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-[#FF6600] mb-2 drop-shadow-lg text-center">Welcome to the Future</h2>
+          <p className="text-base text-[#FF6600]/80 mb-4 text-center max-w-md">Step into Boetos — where AI meets productivity in perfect harmony.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
+            <div className="p-4 rounded-xl bg-gradient-to-r from-[#FF6600]/10 to-[#FF6600]/10 border border-[#FF6600]/20 backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-4 h-4 text-[#FF6600]" />
+                <span className="text-sm font-medium text-[#FF6600]/90">Today's Priorities</span>
+              </div>
+              <p className="text-xs text-[#FF6600]/70">AI-powered task optimization</p>
+            </div>
+            <div className="p-4 rounded-xl bg-gradient-to-r from-[#FF6600]/10 to-[#FF6600]/10 border border-[#FF6600]/20 backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Brain className="w-4 h-4 text-[#FF6600]" />
+                <span className="text-sm font-medium text-[#FF6600]/90">Mental Clarity</span>
+              </div>
+              <p className="text-xs text-[#FF6600]/70">Burnout prevention & focus</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

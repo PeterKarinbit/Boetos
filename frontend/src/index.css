@@ -1,10 +1,96 @@
+@import './styles/theme.css';
+@import 'react-calendar/dist/Calendar.css';
+@import 'react-datepicker/dist/react-datepicker.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Calendar styles */
-@import 'react-calendar/dist/Calendar.css';
-@import 'react-datepicker/dist/react-datepicker.css';
+/* Enhanced AI Login Animations */
+@keyframes scan-line {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes scan-line-reverse {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes error-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes scan-horizontal {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(255, 213, 128, 0.4), 0 0 40px rgba(255, 213, 128, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(255, 213, 128, 0.6), 0 0 60px rgba(255, 213, 128, 0.3);
+  }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes glow-text {
+  0%, 100% { text-shadow: 0 0 5px rgba(255, 213, 128, 0.5); }
+  50% { text-shadow: 0 0 15px rgba(255, 213, 128, 0.8), 0 0 25px rgba(255, 213, 128, 0.6); }
+}
+
+.animate-scan-line {
+  animation: scan-line 2s ease-in-out infinite;
+}
+
+.animate-scan-line-reverse {
+  animation: scan-line-reverse 2s ease-in-out infinite;
+}
+
+.animate-error-shake {
+  animation: error-shake 0.5s ease-in-out;
+}
+
+.animate-scan-horizontal {
+  animation: scan-horizontal 1.5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 4s linear infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.hover\:glow-text:hover {
+  animation: glow-text 1s ease-in-out infinite;
+}
 
 /* Custom styles for calendar */
 .react-calendar {

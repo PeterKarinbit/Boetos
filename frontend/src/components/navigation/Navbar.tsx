@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useUser } from '../../contexts/UserContext';
-import { useNotifications } from '../../contexts/NotificationContext';
+import { useNotificationContext } from '../../contexts/NotificationContext';
 import { Bell, Menu, X, Moon, Sun, Mic } from 'lucide-react';
 import NotificationsDropdown from './NotificationsDropdown';
 import VoiceCommandIndicator from '../voice/VoiceCommandIndicator';
@@ -13,7 +13,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
   const { theme, toggleTheme } = useTheme();
   const { user } = useUser();
-  const { notifications, unreadCount } = useNotifications();
+  const { unreadCount } = useNotificationContext();
   const [isListening, setIsListening] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   

@@ -15,12 +15,32 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  password     String
-  name         String
-  profileImage String?   // optional
-  avatar       String?   // optional
-  preferences  Json?     // store preferences as JSON
-  createdAt    DateTime  @default(now())
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String?
+  password          String
+  role              String   @default("user")
+  preferences       Json?    // store preferences as JSON
+  createdAt         DateTime @default(now())
+  mentalHealthRecords MentalHealthRecord[]
+}
+
+model MentalHealthRecord {
+  id              String   @id @default(cuid())
+  userId          String
+  createdAt       DateTime @default(now())
+  mood            Int
+  stress          Int
+  sleep           Int
+  energy          Int
+  notes           String?
+  riskLevel       Int
+  riskCategory    String
+  factors         String[]
+  recommendations String[]
+  insights        String
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
 }

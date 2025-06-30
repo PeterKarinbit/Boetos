@@ -3,57 +3,24 @@ import { AppDataSource } from '../data-source';
 import { User } from '../entity/User';
 import { UserPreferences } from '../entity/UserPreferences';
 import { AiInterventionRule } from '../entity/AiInterventionRule';
+import ChatMessage from '../entities/ChatMessage';
 
-// Export interfaces for type checking
-export interface User {
-  id: string;
-  email: string;
-  password?: string;
-  name: string;
-  profileImage?: string;
-  avatar?: string;
-  preferences?: any;
-  createdAt: Date;
-  googleId?: string;
-  googleAccessToken?: string;
-  googleRefreshToken?: string;
-}
-
-export interface UserPreferences {
-  id: number;
-  userId: string;
-  preferredChannel: 'SMS' | 'VOICE' | 'IN_APP';
-  quietHoursStart: string | null;
-  quietHoursEnd: string | null;
-  reminderFrequency: number;
-  tonePreference: 'FRIENDLY' | 'PROFESSIONAL' | 'CASUAL';
-  autoTrackCategories: string[];
-  enableAiInterventions: boolean;
-  preferredInterventionMethod: 'BROWSER_NOTIFICATION' | 'DESKTOP_ALERT' | 'AUDIO_REMINDER' | 'SCREEN_OVERLAY' | 'IN_APP_MESSAGE';
-  aiTonePreference: 'FRIENDLY' | 'PROFESSIONAL' | 'CASUAL' | 'DIRECTIVE' | 'EMPATHETIC';
-  customInterventionMessages: Record<string, string>;
-  aiOnboardingMemory: Record<string, any>;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface AiInterventionRule {
-  id: number;
-  userId: string;
-  ruleName: string;
-  triggerType: 'TIME_BASED' | 'ACTIVITY_BASED' | 'EXTERNAL_EVENT' | 'BEHAVIOR_PATTERN';
-  triggerCondition: Record<string, any>;
-  interventionMessageTemplate: string;
-  interventionMethod: 'BROWSER_NOTIFICATION' | 'DESKTOP_ALERT' | 'AUDIO_REMINDER' | 'SCREEN_OVERLAY' | 'IN_APP_MESSAGE' | 'NONE' | null;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Re-export types for convenience
+export type { User, UserPreferences, AiInterventionRule };
 
 export async function initializeDatabase() {
   try {
     // Initialize TypeORM connection
-    await AppDataSource.initialize();
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      
+      // Run migrations if needed
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Running migrations...');
+        await AppDataSource.runMigrations();
+        console.log('Migrations completed successfully');
+      }
+    }
 
     // Create default user if it doesn't exist
     const userRepository = AppDataSource.getRepository(User);
@@ -77,4 +44,4 @@ export async function initializeDatabase() {
     console.error('Error initializing database:', error);
     throw error;
   }
-}
+} 

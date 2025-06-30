@@ -24,10 +24,10 @@ interface Config {
 
 export const config: Config = {
   db: {
-    user: process.env.DB_USER || 'boetos-db_owner',
-    host: process.env.DB_HOST || 'ep-plain-bread-a5p7dj2v-pooler.us-east-2.aws.neon.tech',
-    database: process.env.DB_NAME || 'boetos-db',
-    password: process.env.DB_PASSWORD || 'npg_slfaKcQy34YR',
+    user: process.env.DB_USER || 'neondb_owner',
+    host: process.env.DB_HOST || 'ep-old-credit-a5yjjynp-pooler.us-east-2.aws.neon.tech',
+    database: process.env.DB_NAME || 'neondb',
+    password: process.env.DB_PASSWORD || 'npg_dp0PJYlkNh8g',
     port: parseInt(process.env.DB_PORT || '5432'),
     ssl: {
       rejectUnauthorized: false

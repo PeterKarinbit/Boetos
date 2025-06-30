@@ -118,17 +118,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
     <>
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onToggle}
         ></div>
       )}
-      <aside className={`
-        ${isMobile ? 'fixed top-0' : 'sticky top-16'} left-0 h-screen z-50
-        ${isMobile && !isOpen ? '-translate-x-full' : 'translate-x-0'}
-        ${isCollapsed && !isMobile ? 'w-16' : 'w-64'}
-        ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
-        border-r shadow-lg transition-all duration-300 flex flex-col
-      `}>
+      <aside 
+        className={`fixed top-0 left-0 h-screen z-40 transform transition-transform duration-300 ease-in-out ${
+          isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'
+        } ${
+          isCollapsed && !isMobile ? 'w-16' : 'w-64'
+        } border-r shadow-lg flex flex-col`}
+        style={{ background: 'var(--bg-glass)', color: 'var(--text-primary)', borderColor: 'var(--border-primary)' }}
+      >
         <div className={`flex items-center justify-between p-4 border-b ${
           theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
         }`}>
@@ -211,7 +212,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           }`}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                {user.avatar ? (
+                {user.profileImage ? (
+                  <img 
+                    src={user.profileImage} 
+                    alt={user.name || 'User'} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : user.avatar ? (
                   <img 
                     src={user.avatar} 
                     alt={user.name || 'User'} 
@@ -221,7 +228,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                   <span className="text-white font-semibold text-sm">
                     {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
                   </span>
-                  )}
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 dark:text-white truncate">

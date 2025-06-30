@@ -1,3 +1,8 @@
+@import 'react-calendar/dist/Calendar.css';
+@import 'react-datepicker/dist/react-datepicker.css';
+
+/* Calendar styles */
+/* Custom styles for calendar */
 :root {
   /* Primary Colors */
   --google-bg-primary: #202124;
@@ -19,6 +24,10 @@
   --google-navigation-arrows: #9aa0a6;
   --google-selected-date: #1a73e8;
   --google-hover-state: #3c4043;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
@@ -45,7 +54,7 @@ body {
   color: var(--google-text-primary);
 }
 
-.rbc-toolbar button {
+.rbc-toolbar button, .rbc-toolbar button:hover, .rbc-toolbar button:active {
   color: var(--google-text-secondary);
   background-color: transparent;
   border: 1px solid var(--google-borders);
@@ -53,6 +62,7 @@ body {
   padding: 8px 12px;
   font-size: 14px;
   transition: background-color 0.2s, border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .rbc-toolbar button:hover {

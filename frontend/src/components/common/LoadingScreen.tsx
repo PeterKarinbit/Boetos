@@ -7,7 +7,7 @@ const LoadingScreen: React.FC = () => {
         <h1 className="text-4xl font-bold text-white mb-4">
           Boetos
         </h1>
-        <p className="text-blue-100 mb-8">Your AI Assistant for Entrepreneurs</p>
+        <p className="text-blue-100 mb-8">Boetos, the AI that lets you focus while it handles the rest.</p>
         
         <div className="flex justify-center">
           <div className="relative w-24 h-24">

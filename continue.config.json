@@ -1,0 +1,12 @@
+{
+  "models": [
+    {
+      "title": "DeepSeek R1",
+      "provider": "openai",
+      "apiBase": "https://openrouter.ai/api/v1",
+      "apiKey": " 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
+",
+      "model": "deepseek/deepseek-r1-0528:free"
+    }
+  ]
+}

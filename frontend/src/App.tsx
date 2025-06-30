@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useContext } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Dashboard from './pages/Dashboard';
 import Calendar from './pages/Calendar';
@@ -8,12 +8,21 @@ import BurnoutTracker from './pages/BurnoutTracker';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import VerifyEmailSuccess from './pages/VerifyEmailSuccess';
+import VerifyEmailError from './pages/VerifyEmailError';
+import ResendVerification from './pages/ResendVerification';
 import { UserProvider, useUser } from './contexts/UserContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { TimerProvider } from './contexts/TimerContext';
 import LoadingScreen from './components/common/LoadingScreen';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Sidebar from './components/navigation/Sidebar';
 import { Menu } from 'lucide-react';
+import api from './services/api'; // <-- IMPORT THE API SERVICE
+import BoetosTaskTimer from './components/common/BoetosTaskTimer';
+import { FocusModeProvider, useFocusMode } from './contexts/FocusModeContext';
+import FocusPopup from './components/common/FocusPopup';
+import OneSignal from 'react-onesignal';
 
 // Types for better type safety
 interface AppState {
@@ -29,8 +38,13 @@ const THEME_STORAGE_KEY = 'theme';
 const SIDEBAR_STORAGE_KEY = 'sidebarOpen';
 const IDLE_TIMEOUT_MINUTES = 5; // Define idle timeout
 const ACTIVITY_REPORT_INTERVAL_SECONDS = 60; // How often to report activity
+const ONESIGNAL_APP_ID = '36ea6058-6843-4080-b67d-811dc96c1783';
 
 function App() {
+  console.log('App component rendered');
+  const location = useLocation();
+  const { user, isLoading } = useUser();
+
   // Initialize state with proper type safety and local storage recovery
   const [appState, setAppState] = useState<AppState>(() => {
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
@@ -44,7 +58,6 @@ function App() {
     };
   });
 
-  const { user } = useUser(); // Get user from context using the custom hook
   const [lastActivityTime, setLastActivityTime] = useState<number>(Date.now());
 
   // Function to send activity to backend
@@ -54,18 +67,10 @@ function App() {
       return;
     }
     try {
-      await fetch('/api/activity/log-activity', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add authorization token if needed, e.g., 'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          activityType: type,
-          timestamp: new Date().toISOString(),
-          details: details,
-        }),
+      await api.post('/activity', {
+        type: type,
+        description: `User activity: ${type}`,
+        metadata: details,
       });
       // console.log('Activity sent:', type); // Uncomment for debugging
     } catch (error) {
@@ -172,6 +177,8 @@ function App() {
 
   // Effect for updating last activity time on user interaction
   useEffect(() => {
+    if (!user) return;
+
     const updateActivityTime = () => {
       setLastActivityTime(Date.now());
     };
@@ -190,10 +197,12 @@ function App() {
       window.removeEventListener('click', updateActivityTime);
       window.removeEventListener('scroll', updateActivityTime);
     };
-  }, [sendActivity]); // Depend on sendActivity
+  }, [user, sendActivity]); // Depend on user and sendActivity
 
   // Effect for periodic activity reporting and idle detection
   useEffect(() => {
+    if (!user) return;
+
     const interval = setInterval(() => {
       const now = Date.now();
       const idleTime = now - lastActivityTime;
@@ -202,12 +211,12 @@ function App() {
       if (idleMinutes >= IDLE_TIMEOUT_MINUTES) {
         sendActivity('IDLE', { durationMinutes: idleMinutes.toFixed(2) });
       } else {
-        sendActivity('ACTIVE_PING');
+        sendActivity('ACTIVE');
       }
     }, ACTIVITY_REPORT_INTERVAL_SECONDS * 1000);
 
     return () => clearInterval(interval);
-  }, [lastActivityTime, sendActivity]); // Depend on lastActivityTime and sendActivity
+  }, [user, lastActivityTime, sendActivity]); // Depend on user, lastActivityTime and sendActivity
 
   // Enhanced theme application effect
   useEffect(() => {
@@ -237,71 +246,170 @@ function App() {
     }));
   }, [appState.isDarkMode]);
 
-  // Listen for system theme changes
+  // Handle theme changes from OS
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
     const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-      // Only auto-switch if user hasn't set a preference
-      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-      if (!savedTheme) {
-        setAppState(prev => ({ ...prev, isDarkMode: e.matches }));
-      }
+      setAppState(prev => ({
+        ...prev,
+        isDarkMode: e.matches
+      }));
     };
-
     mediaQuery.addEventListener('change', handleSystemThemeChange);
     return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
   }, []);
 
-  // Protected route wrapper component for DRY principle
-  const ProtectedPageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <ProtectedRoute>
-      <div className="flex w-full h-full">
-        <Sidebar
-          isOpen={appState.isSidebarOpen}
-          onToggle={toggleSidebar}
-        />
-        <main className={`flex-1 overflow-y-auto transition-all duration-300 ${appState.isSidebarOpen ? 'p-8' : 'p-8'}`}>
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
-        </main>
-      </div>
-    </ProtectedRoute>
-  );
+  useEffect(() => {
+    OneSignal.init({
+      appId: ONESIGNAL_APP_ID,
+      notifyButton: {
+        enable: true,
+        prenotify: true,
+        showCredit: false,
+        text: {
+          'tip.state.unsubscribed': 'Subscribe to notifications',
+          'tip.state.subscribed': "You're subscribed to notifications",
+          'tip.state.blocked': "You've blocked notifications",
+          'message.prenotify': 'Click to subscribe to notifications',
+          'message.action.subscribed': "Thanks for subscribing!",
+          'message.action.resubscribed': "You're subscribed to notifications",
+          'message.action.unsubscribed': "You won't receive notifications again",
+          'message.action.subscribing': 'Subscribing...',
+          'dialog.main.title': 'Manage Site Notifications',
+          'dialog.main.button.subscribe': 'SUBSCRIBE',
+          'dialog.main.button.unsubscribe': 'UNSUBSCRIBE',
+          'dialog.blocked.title': 'Unblock Notifications',
+          'dialog.blocked.message': 'Follow these instructions to allow notifications:'
+        }
+      },
+      allowLocalhostAsSecureOrigin: true,
+    });
+  }, []);
 
-  // Show loading screen while initializing
-  if (appState.isLoading) {
-    return <LoadingScreen />;
+  if (isLoading) {
+    return (
+      <div className={`app-container ${themeClass}`}>
+        <a
+          href="https://bolt.new"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed top-4 right-4 z-50"
+          style={{ maxHeight: '40px' }}
+        >
+          <img
+            src={appState.isDarkMode ? "/Bolt white.jpg" : "/bolt balck.jpg"}
+            alt="Bolt.new Hackathon Badge"
+            className="h-10 max-h-10 w-auto transition-all duration-300 shadow-lg rounded-md"
+            style={{ maxHeight: '40px' }}
+          />
+        </a>
+        <LoadingScreen />
+      </div>
+    );
   }
 
+  // Unauthenticated users only see the Login page
+  if (!user) {
+    return (
+      <div className={`app-container ${themeClass}`}>
+        <a
+          href="https://bolt.new"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed top-4 right-4 z-50"
+          style={{ maxHeight: '40px' }}
+        >
+          <img
+            src={appState.isDarkMode ? "/Bolt white.jpg" : "/bolt balck.jpg"}
+            alt="Bolt.new Hackathon Badge"
+            className="h-10 max-h-10 w-auto transition-all duration-300 shadow-lg rounded-md"
+            style={{ maxHeight: '40px' }}
+          />
+        </a>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </div>
+    );
+  }
+
+  // Authenticated user layout
   return (
-    <ThemeProvider>
-      <UserProvider>
-        <NotificationProvider>
-          {/* Floating mobile sidebar open button */}
-          {!appState.isSidebarOpen && (
-            <button
-              className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-lg lg:hidden"
-              onClick={toggleSidebar}
-              aria-label="Open sidebar"
-            >
-              <Menu className="h-6 w-6 text-gray-700" />
-            </button>
-          )}
-          <Routes>
-            <Route path="/" element={<ProtectedPageWrapper><Dashboard /></ProtectedPageWrapper>} />
-            <Route path="/calendar" element={<ProtectedPageWrapper><Calendar /></ProtectedPageWrapper>} />
-            <Route path="/voice-assistant" element={<ProtectedPageWrapper><VoiceAssistant /></ProtectedPageWrapper>} />
-            <Route path="/burnout-tracker" element={<ProtectedPageWrapper><BurnoutTracker /></ProtectedPageWrapper>} />
-            <Route path="/settings" element={<ProtectedPageWrapper><Settings /></ProtectedPageWrapper>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/profile" element={<ProtectedPageWrapper><Profile /></ProtectedPageWrapper>} />
-          </Routes>
-        </NotificationProvider>
-      </UserProvider>
-    </ThemeProvider>
+    <FocusModeProvider>
+      <BoetosTaskTimer />
+      <div className={`app-container ${themeClass}`}>
+        <a
+          href="https://bolt.new"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed top-4 right-4 z-50"
+          style={{ maxHeight: '40px' }}
+        >
+          <img
+            src={appState.isDarkMode ? "/Bolt white.jpg" : "/bolt balck.jpg"}
+            alt="Bolt.new Hackathon Badge"
+            className="h-10 max-h-10 w-auto transition-all duration-300 shadow-lg rounded-md"
+            style={{ maxHeight: '40px' }}
+          />
+        </a>
+        <div className="flex h-screen bg-slate-100 dark:bg-slate-900">
+          <Sidebar 
+            isOpen={appState.isSidebarOpen} 
+            onToggle={toggleSidebar}
+          />
+          <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+            appState.isSidebarOpen ? 'lg:ml-64' : 'ml-0'
+          }`}>
+            <header className="flex items-center justify-between p-4 bg-white dark:bg-slate-800/50 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 lg:hidden">
+              <button onClick={toggleSidebar} className="text-slate-600 dark:text-slate-300">
+                <Menu />
+              </button>
+              <div className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                Boetos
+              </div>
+            </header>
+
+            <main className="flex-1 overflow-y-auto">
+              <Routes>
+                <Route path="/login" element={<Navigate to="/" />} />
+                <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+                <Route path="/voice-assistant" element={<ProtectedRoute><VoiceAssistant /></ProtectedRoute>} />
+                <Route path="/burnout-tracker" element={<ProtectedRoute><BurnoutTracker /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/verify-email-success" element={<ProtectedRoute><VerifyEmailSuccess /></ProtectedRoute>} />
+                <Route path="/verify-email-error" element={<ProtectedRoute><VerifyEmailError /></ProtectedRoute>} />
+                <Route path="/resend-verification" element={<ProtectedRoute><ResendVerification /></ProtectedRoute>} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </main>
+          </div>
+        </div>
+      </div>
+      <FocusPopupWrapper />
+    </FocusModeProvider>
   );
 }
 
-export default App;
+// Helper to only show popup when focus mode is active
+function FocusPopupWrapper() {
+  const { active } = useFocusMode();
+  return active ? <FocusPopup /> : null;
+}
+
+const AppWrapper = () => (
+  <UserProvider>
+    <TimerProvider>
+      <NotificationProvider>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </NotificationProvider>
+    </TimerProvider>
+  </UserProvider>
+);
+
+export default AppWrapper;

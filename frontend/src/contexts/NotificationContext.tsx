@@ -1,84 +1,145 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useUser } from './UserContext';
+import api from '../services/api';
 
 export interface Notification {
   id: string;
-  type: 'success' | 'info' | 'warning' | 'error';
+  title: string;
   message: string;
-  title?: string;
-  time: Date;
-  isRead: boolean;
+  type: string;
+  data?: any;
+  read: boolean;
+  created_at: string;
 }
 
 interface NotificationContextType {
-  notifications: Notification[];
-  addNotification: (notification: Omit<Notification, 'id' | 'time' | 'isRead'>) => void;
-  markAsRead: (id: string) => void;
-  clearNotifications: () => void;
+  hasNewNotifications: boolean;
+  setHasNewNotifications: (hasNew: boolean) => void;
   unreadCount: number;
+  setUnreadCount: (count: number) => void;
+  refreshNotifications: () => void;
+  markAsRead: (notificationId: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-export const useNotifications = () => {
+export const useNotificationContext = () => {
   const context = useContext(NotificationContext);
   if (context === undefined) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
+    throw new Error('useNotificationContext must be used within a NotificationProvider');
   }
   return context;
 };
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notifications, setNotifications] = useState<Notification[]>(() => {
-    const saved = localStorage.getItem('notifications');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return parsed.map((notification: any) => ({
-        ...notification,
-        time: new Date(notification.time)
-      }));
-    }
-    return [];
-  });
+interface NotificationProviderProps {
+  children: ReactNode;
+}
 
-  useEffect(() => {
-    localStorage.setItem('notifications', JSON.stringify(notifications));
-  }, [notifications]);
+export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
+  const [hasNewNotifications, setHasNewNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const { user } = useUser();
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  // Get token from localStorage
+  const getToken = () => localStorage.getItem('token');
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'time' | 'isRead'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: Date.now().toString(),
-      time: new Date(),
-      isRead: false
-    };
+  // Fetch initial unread count
+  const fetchUnreadCount = async () => {
+    const token = getToken();
+    if (!token || !user) return;
     
-    setNotifications(prev => [newNotification, ...prev]);
+    try {
+      const response = await api.get('/notifications/unread-count', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUnreadCount(response.data.count || 0);
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error);
+    }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, isRead: true } 
-          : notification
-      )
-    );
+  // Mark notification as read
+  const markAsRead = async (notificationId: string) => {
+    const token = getToken();
+    if (!token || !user) return;
+    
+    try {
+      await api.patch(`/notifications/${notificationId}/read`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
   };
 
-  const clearNotifications = () => {
-    setNotifications([]);
+  // Mark all notifications as read
+  const markAllAsRead = async () => {
+    const token = getToken();
+    if (!token || !user) return;
+    
+    try {
+      await api.patch('/notifications/mark-all-read', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
+  };
+
+  // Refresh notifications
+  const refreshNotifications = () => {
+    fetchUnreadCount();
+    setHasNewNotifications(false);
+  };
+
+  // Set up polling for new notifications
+  useEffect(() => {
+    const token = getToken();
+    if (!token || !user) return;
+
+    // Fetch initial count
+    fetchUnreadCount();
+
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // Set up WebSocket connection for real-time notifications (if available)
+  useEffect(() => {
+    const token = getToken();
+    if (!token || !user) return;
+
+    // For now, we'll use polling. In the future, you can implement WebSocket here
+    // const ws = new WebSocket(`ws://localhost:3001/notifications?token=${token}`);
+    // ws.onmessage = (event) => {
+    //   const data = JSON.parse(event.data);
+    //   if (data.type === 'new_notification') {
+    //     setHasNewNotifications(true);
+    //     setUnreadCount(prev => prev + 1);
+    //   }
+    // };
+    // return () => ws.close();
+  }, [user]);
+
+  const value: NotificationContextType = {
+    hasNewNotifications,
+    setHasNewNotifications,
+    unreadCount,
+    setUnreadCount,
+    refreshNotifications,
+    markAsRead,
+    markAllAsRead,
   };
 
   return (
-    <NotificationContext.Provider value={{
-      notifications,
-      addNotification,
-      markAsRead,
-      clearNotifications,
-      unreadCount
-    }}>
+    <NotificationContext.Provider value={value}>
       {children}
     </NotificationContext.Provider>
   );
