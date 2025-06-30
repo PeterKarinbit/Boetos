@@ -37,7 +37,8 @@
     "jest": "^30.0.3",
     "jest-environment-node": "^30.0.2",
     "pg": "^8.16.3",
-    "supertest": "^7.1.1"
+    "supertest": "^7.1.1",
+    "vite": "^6.3.5"
   },
   "dependencies": {
     "axios": "^1.10.0",
