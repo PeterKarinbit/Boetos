@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useUser } from './UserContext';
 import api from '../services/api';
+import { toast, Toaster } from 'sonner';
 
 export interface Notification {
   id: string;
@@ -12,7 +13,16 @@ export interface Notification {
   created_at: string;
 }
 
+export type NotificationType = 'success' | 'error' | 'info' | 'warning';
+
+export interface ToastOptions {
+  type?: NotificationType;
+  duration?: number;
+  position?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+}
+
 interface NotificationContextType {
+  // Existing notification context
   hasNewNotifications: boolean;
   setHasNewNotifications: (hasNew: boolean) => void;
   unreadCount: number;
@@ -20,6 +30,13 @@ interface NotificationContextType {
   refreshNotifications: () => void;
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  
+  // Toast notifications
+  showToast: (message: string, options?: ToastOptions) => void;
+  showSuccess: (message: string) => void;
+  showError: (message: string) => void;
+  showInfo: (message: string) => void;
+  showWarning: (message: string) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -37,6 +54,33 @@ interface NotificationProviderProps {
 }
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
+  // Toast notification functions
+  const showToast = (message: string, options: ToastOptions = {}) => {
+    const { type = 'info', duration = 5000 } = options;
+    
+    const toastOptions = { duration };
+
+    switch (type) {
+      case 'success':
+        toast.success(message, toastOptions);
+        break;
+      case 'error':
+        toast.error(message, toastOptions);
+        break;
+      case 'warning':
+        toast.warning(message, toastOptions);
+        break;
+      case 'info':
+      default:
+        toast(message, toastOptions);
+        break;
+    }
+  };
+
+  const showSuccess = (message: string) => showToast(message, { type: 'success' });
+  const showError = (message: string) => showToast(message, { type: 'error' });
+  const showInfo = (message: string) => showToast(message, { type: 'info' });
+  const showWarning = (message: string) => showToast(message, { type: 'warning' });
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useUser();
@@ -128,19 +172,25 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     // return () => ws.close();
   }, [user]);
 
-  const value: NotificationContextType = {
-    hasNewNotifications,
-    setHasNewNotifications,
-    unreadCount,
-    setUnreadCount,
-    refreshNotifications,
-    markAsRead,
-    markAllAsRead,
-  };
-
   return (
-    <NotificationContext.Provider value={value}>
+    <NotificationContext.Provider
+      value={{
+        hasNewNotifications,
+        setHasNewNotifications,
+        unreadCount,
+        setUnreadCount,
+        refreshNotifications,
+        markAsRead,
+        markAllAsRead,
+        showToast,
+        showSuccess,
+        showError,
+        showInfo,
+        showWarning,
+      }}
+    >
       {children}
+      <Toaster position="top-right" richColors />
     </NotificationContext.Provider>
   );
 };

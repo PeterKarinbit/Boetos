@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "test": "cd backend && jest --detectOpenHandles --forceExit",
     "test:watch": "cd backend && jest --watch",
     "test:coverage": "cd backend && jest --coverage",
@@ -12,7 +13,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.test.js"],
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ],
     "testTimeout": 30000,
     "detectOpenHandles": true,
     "forceExit": true,
@@ -30,6 +33,7 @@
   "devDependencies": {
     "@types/node": "^22.15.30",
     "@types/pg": "^8.15.4",
+    "concurrently": "^9.2.0",
     "jest": "^30.0.3",
     "jest-environment-node": "^30.0.2",
     "pg": "^8.16.3",

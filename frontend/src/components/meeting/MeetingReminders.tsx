@@ -3,7 +3,7 @@ import { Clock, AlertTriangle, MapPin, Zap, X, Clock as ClockIcon } from 'lucide
 import { getMeetingReminders, snoozeReminder, dismissReminder } from '../../services/meetingService';
 import { useUser } from '../../contexts/UserContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useNotifications } from '../../contexts/NotificationContext';
+import { useNotificationContext } from '../../contexts/NotificationContext';
 
 type MeetingReminder = {
   eventId: string;
@@ -34,7 +34,7 @@ const MeetingReminders: React.FC = () => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const { user } = useUser();
   const { theme } = useTheme();
-  const { showNotification } = useNotifications(); // note: correct plural
+  const { setHasNewNotifications } = useNotificationContext();
 
   const fetchReminders = async () => {
     if (!user) return;
@@ -45,9 +45,8 @@ const MeetingReminders: React.FC = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load meeting reminders. Please try again later.');
-      showNotification({
-        type: 'error',
-        message: 'Failed to load meeting reminders',
+      // You can use setHasNewNotifications(true) here if you want to indicate a new notification
+      console.error('Failed to load meeting reminders:', err);
       });
     } finally {
       setIsLoading(false);
