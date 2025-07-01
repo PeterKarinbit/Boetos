@@ -272,8 +272,8 @@ router.post('/login', async (req, res) => {
       await initRepositories();
     }
 
-    const { email, password } = req.body;
-    console.log(`Login attempt for email: ${email}`);
+    const { email, password, action } = req.body;
+    console.log(`Login attempt for email: ${email}, action: ${action}`);
     
     if (!email || !password) {
       console.log('Missing email or password');
@@ -288,7 +288,7 @@ router.post('/login', async (req, res) => {
 
     if (!user) {
       console.log('User not found');
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(404).json({ error: 'Account does not exist' });
     }
     
     if (!user.password) {

@@ -21,13 +21,11 @@
     ]
   },
   "include": [
-    "src/**/*",
-    "__tests__/**/*",
-    "test/**/*"
+    "src/**/*"
   ],
   "exclude": [
-    "node_modules",
-    "dist"
+    "test",
+    "**/*.test.ts"
   ],
   "ts-node": {
     "require": ["tsconfig-paths/register"]

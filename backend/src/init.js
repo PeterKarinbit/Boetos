@@ -17,3 +17,12 @@ const initializeDatabase = async () => {
     // Check if we need to create default data
     const userRepository = AppDataSource.getRepository(User);
     const existingUsers = await userRepository.find();
+
+    // You can add more initialization logic here if needed
+
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+};
+
+module.exports = initializeDatabase;

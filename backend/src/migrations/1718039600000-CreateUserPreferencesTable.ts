@@ -11,7 +11,7 @@ export class CreateUserPreferencesTable1718039600000 implements MigrationInterfa
             await queryRunner.query(`
                 CREATE TABLE "user_preferences" (
                     "id" SERIAL NOT NULL,
-                    "user_id" uuid NOT NULL,
+                    "user_id" integer NOT NULL,
                     "preferred_channel" character varying NOT NULL,
                     "quiet_hours_start" character varying,
                     "quiet_hours_end" character varying,
@@ -26,7 +26,7 @@ export class CreateUserPreferencesTable1718039600000 implements MigrationInterfa
                     "created_at" TIMESTAMP NOT NULL DEFAULT now(),
                     "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
                     CONSTRAINT "PK_user_preferences" PRIMARY KEY ("id"),
-                    CONSTRAINT "FK_user_preferences_user" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE CASCADE
+                    CONSTRAINT "FK_user_preferences_user" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
                 )
             `);
         } else {

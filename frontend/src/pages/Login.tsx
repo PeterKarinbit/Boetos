@@ -405,8 +405,8 @@ const AuthPage = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 48,
-          height: 48,
+          width: 72,
+          height: 72,
           borderRadius: '50%',
           background: '#181818',
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
@@ -419,8 +419,8 @@ const AuthPage = () => {
           src="/assets/images/bolt-black.jpg"
           alt="Bolt.new Hackathon Badge"
           style={{
-            width: 32,
-            height: 32,
+            width: 56,
+            height: 56,
             borderRadius: '50%',
             objectFit: 'cover'
           }}
