@@ -74,19 +74,22 @@ const AppDataSource = new DataSource({
 });
 
 let isInitialized = false;
+let isInitializing = false;
 
 const checkConnection = async () => {
   if (!AppDataSource || !AppDataSource.isInitialized) {
+    logger.info('checkConnection: DataSource not initialized');
     return false;
   }
   try {
-    // Perform a simple query to check the connection with timeout
+    logger.info('checkConnection: Performing SELECT 1');
     const result = await Promise.race([
       AppDataSource.query('SELECT 1'),
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Connection check timeout')), 5000)
       )
     ]);
+    logger.info('checkConnection: Success');
     return result && result.length > 0;
   } catch (error) {
     logger.error('Database connection check failed:', error.message);
@@ -96,12 +99,26 @@ const checkConnection = async () => {
 
 const initializeDataSource = async () => {
   if (isInitialized && await checkConnection()) {
+    logger.info('initializeDataSource: Already initialized and connection is healthy');
     return AppDataSource;
   }
+
+  if (isInitializing) {
+    logger.info('initializeDataSource: Already initializing, waiting...');
+    while (isInitializing) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    logger.info('initializeDataSource: Initialization finished by another process');
+    return AppDataSource;
+  }
+
+  isInitializing = true;
+  logger.info('initializeDataSource: Starting initialization');
 
   // If already initialized but connection is dead, destroy and re-initialize
   if (AppDataSource.isInitialized) {
     try {
+      logger.info('initializeDataSource: Destroying existing connection');
       await AppDataSource.destroy();
     } catch (error) {
       logger.warn('Error destroying existing connection:', error.message);
@@ -113,14 +130,13 @@ const initializeDataSource = async () => {
   while (retries > 0) {
     try {
       if (!AppDataSource.isInitialized) {
+        logger.info('initializeDataSource: Initializing AppDataSource');
         await AppDataSource.initialize();
         logger.info('Data Source has been initialized!');
-        
         // Verify connection is working
         if (!(await checkConnection())) {
           throw new Error('Connection verification failed after initialization');
         }
-        
         // Check if migrations table exists and get pending migrations
         try {
           const pendingMigrations = await AppDataSource.showMigrations();
@@ -148,20 +164,23 @@ const initializeDataSource = async () => {
             // Don't throw here, let the application continue
           }
         }
-
         isInitialized = true;
       }
+      logger.info('initializeDataSource: Initialization complete');
+      isInitializing = false;
       return AppDataSource;
     } catch (error) {
       logger.error('Error during Data Source initialization:', error.message);
       retries--;
       if (retries === 0) {
+        isInitializing = false;
         throw error;
       }
       logger.info(`Retrying... ${retries} attempts left`);
       await new Promise(resolve => setTimeout(resolve, 2000)); // Reduced delay
     }
   }
+  isInitializing = false;
 };
 
 // Handle process termination

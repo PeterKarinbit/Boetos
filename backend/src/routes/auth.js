@@ -88,9 +88,8 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Generate verification token
-    const verificationToken = generateVerificationToken();
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    // Set email_verified to true by default, do not generate verification token/expiration
+    const emailVerified = true;
 
     // Create new user
     let user = userRepository.create({
@@ -102,9 +101,7 @@ router.post('/register', async (req, res) => {
       preferences,
       onboardingCompleted: false,
       onboardingData: null,
-      email_verified: false,
-      email_verification_token: verificationToken,
-      email_verification_expires: verificationExpires,
+      email_verified: emailVerified,
     });
 
     // Save user
@@ -121,14 +118,6 @@ router.post('/register', async (req, res) => {
     // Associate voice settings with the user
     user.voiceSettings = defaultVoiceSettings;
 
-    // Send verification email
-    try {
-      await EmailService.sendVerificationEmail(email, name, verificationToken);
-    } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
-      // Don't fail registration if email fails, but log it
-    }
-
     // Generate JWT
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
@@ -136,7 +125,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       token,
       user: prepareUserResponse(user),
-      message: 'Registration successful! Please check your email to verify your account.'
+      message: 'Registration successful! You can now log in.'
     });
   } catch (err) {
     console.error('Registration error:', err);

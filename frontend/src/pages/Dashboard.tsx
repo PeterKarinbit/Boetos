@@ -591,10 +591,6 @@ export const Dashboard: React.FC = () => {
   return (
     <ErrorBoundary fallback={<div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 rounded-lg">Something went wrong. Please refresh the page.</div>}>
       <div className="container mx-auto px-4 py-8 max-w-7xl relative">
-        {/* Built by Bolt badge */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-          <img src="/Bolt white.jpg" alt="Built by Bolt" style={{ height: 40, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
-        </div>
         {/* Streak Component */}
         {streak > 0 && (
           <div className="flex items-center gap-2 mb-4 p-2 bg-orange-100 dark:bg-orange-900/30 rounded-xl shadow text-orange-600 dark:text-orange-300 w-fit mx-auto animate-bounce">

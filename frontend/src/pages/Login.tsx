@@ -295,72 +295,86 @@ const AuthPage = () => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-    
-    console.log('Login form submitted', { email: formData.email });
 
     try {
       // Basic validation
       if (!formData.email || !formData.password) {
         const errorMsg = !formData.email ? 'Email is required' : 'Password is required';
-        console.error('Validation error:', errorMsg);
         setError(errorMsg);
         setIsLoading(false);
         return;
       }
+      if (!isLogin && (!formData.name || !formData.confirmPassword)) {
+        setError('Name and confirm password are required');
+        setIsLoading(false);
+        return;
+      }
+      if (!isLogin && formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        setIsLoading(false);
+        return;
+      }
 
-      console.log('Sending login request to backend...');
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
+      const endpoint = isLogin
+        ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/login`
+        : `${import.meta.env.VITE_BACKEND_URL}/api/auth/register`;
+
+      const body = isLogin
+        ? {
+            email: formData.email.trim(),
+            password: formData.password,
+          }
+        : {
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            password: formData.password,
+          };
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          email: formData.email.trim(),
-          password: formData.password,
-        }),
+        body: JSON.stringify(body),
       });
 
-      console.log('Received response, status:', response.status);
       const data = await response.json().catch(() => ({}));
-      
-      console.log('Response data:', data);
 
       if (!response.ok) {
-        const errorMessage = data.error || 'Login failed. Please check your credentials and try again.';
-        console.error('Login failed:', { status: response.status, error: errorMessage });
+        const errorMessage = data.error || (isLogin
+          ? 'Login failed. Please check your credentials and try again.'
+          : 'Registration failed. Please check your details and try again.');
         setError(errorMessage);
         setIsLoading(false);
         return;
       }
 
-      if (!data.token) {
-        console.error('No token in response:', data);
+      if (!data.token && isLogin) {
         setError('Authentication error: No token received');
         setIsLoading(false);
         return;
       }
 
-      console.log('Login successful, storing token and redirecting...');
-      // Store token and redirect
-      localStorage.setItem('token', data.token);
-      
-      // Trigger Sidekick login event if user data is available
-      if (data.user && data.user.id) {
-        console.log('Triggering Sidekick login event...');
-        try {
-          await triggerSidekickLogin(data.user);
-        } catch (sidekickError) {
-          console.error('Sidekick login event failed:', sidekickError);
-          // Don't fail the login if Sidekick fails
+      if (isLogin) {
+        localStorage.setItem('token', data.token);
+        if (data.user && data.user.id) {
+          try {
+            await triggerSidekickLogin(data.user);
+          } catch {}
         }
+        window.location.href = '/dashboard';
+      } else {
+        toast.success('Registration successful! Please check your email to verify your account.');
+        setIsLogin(true); // Switch to login mode after registration
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
+        });
       }
-      
-      // Redirect to dashboard
-      console.log('Redirecting to dashboard...');
-      window.location.href = '/dashboard';
     } catch (err) {
-      console.error('Login error:', err);
       setError('Unable to connect to the server. Please check your internet connection and try again.');
     } finally {
       setIsLoading(false);
@@ -392,40 +406,6 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-gradient-to-br from-black via-[#181818] to-[#0a0a0a] relative overflow-hidden">
-      {/* Bolt.black badge in top right with hyperlink */}
-      <a
-        href="https://bolt.new"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          position: 'fixed',
-          top: 16,
-          right: 16,
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 72,
-          height: 72,
-          borderRadius: '50%',
-          background: '#181818',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          border: '2px solid #FF6600',
-          transition: 'box-shadow 0.2s'
-        }}
-        title="Bolt.new Hackathon Badge"
-      >
-        <img
-          src="/assets/images/bolt-black.jpg"
-          alt="Bolt.new Hackathon Badge"
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            objectFit: 'cover'
-          }}
-        />
-      </a>
       {/* Left: Glassy login/signup form card */}
       <div className="relative z-10 flex-1 flex items-center justify-center p-4 md:p-12">
         <div className="w-full max-w-md bg-gradient-to-br from-[#181818]/90 to-[#2d1a00]/90 rounded-3xl shadow-2xl border border-[#FF6600]/30 backdrop-blur-xl p-8 md:p-10 flex flex-col gap-4" style={{ boxShadow: '0 0 32px 8px #FF660033, 0 0 64px 16px #fff1' }}>
