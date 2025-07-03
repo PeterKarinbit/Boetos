@@ -5,55 +5,55 @@ import { User } from "./User";
 export class UserVoiceSettings {
 
     @PrimaryGeneratedColumn('uuid')
-    id: string;
+    id!: string;
 
     @Column({ type: 'uuid', nullable: false })
-    user_id: string;
+    user_id!: string;
 
     @Column({ nullable: true })
-    voice_model: string;
+    voice_model!: string;
 
     @Column({ nullable: true })
-    voice_id: string;
+    voice_id!: string;
 
     @Column({ default: false })
-    voice_enabled: boolean;
+    voice_enabled!: boolean;
 
     @Column({ nullable: true })
-    voice_language: string;
+    voice_language!: string;
 
     @Column({ type: 'float', default: 1.0 })
-    voice_speed: number;
+    voice_speed!: number;
 
     @Column({ type: 'float', default: 1.0 })
-    voice_pitch: number;
+    voice_pitch!: number;
 
     @Column({ type: 'float', default: 1.0 })
-    voice_volume: number;
+    voice_volume!: number;
 
     // ... add other voice settings columns as needed ...
 
     @Column({ nullable: true })
-    voice_gender: string;
+    voice_gender!: string;
 
     @Column({ nullable: true })
-    voice_accent: string;
+    voice_accent!: string;
 
     @Column({ nullable: true })
-    voice_style: string;
+    voice_style!: string;
 
     @Column({ nullable: true })
-    voice_emotion: string;
+    voice_emotion!: string;
 
     @Column({ nullable: true })
-    voice_background: string;
+    voice_background!: string;
 
 
     @CreateDateColumn()
-    created_at: Date;
+    created_at!: Date;
 
     @UpdateDateColumn()
-    updated_at: Date;
+    updated_at!: Date;
 
     @OneToOne(() => User, user => user.voiceSettings)
     @JoinColumn({ name: 'user_id' })

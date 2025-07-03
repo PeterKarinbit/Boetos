@@ -1,4 +1,4 @@
-import { User as CustomUser } from '../entity/User';
+import { User as CustomUser } from '../entities/User';
 
 declare global {
   namespace Express {

@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { OpenViewerClient } from '../lib/openviewer';
-import { BurnoutCalculator } from '../lib/burnoutCalculator';
+// import { BurnoutCalculator } from '../lib/burnoutCalculator'; // TODO: Implement or restore this module if needed
 
 const openviewer = new OpenViewerClient({
   apiKey: process.env.OPENROUTER_API_KEY || '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',

@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { AppDataSource } from '../data-source';
-import { User } from '../entity/User';
-import { UserPreferences } from '../entity/UserPreferences';
-import { AiInterventionRule } from '../entity/AiInterventionRule';
+import { User } from '../entities/User';
+import { UserPreferences } from '../entities/UserPreferences';
+import { AiInterventionRule } from '../entities/AiInterventionRule';
 import ChatMessage from '../entities/ChatMessage';
 
 // Re-export types for convenience

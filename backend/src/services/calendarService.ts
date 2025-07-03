@@ -1,6 +1,6 @@
 import { AppDataSource } from '../data-source';
-import { UserSchedule } from '../entity/UserSchedule';
-import { User } from '../entity/User';
+import { UserSchedule } from '../entities/UserSchedule';
+import { User } from '../entities/User';
 import { In, MoreThan } from 'typeorm';
 
 const apiKey = process.env.GOOGLE_API_KEY;
