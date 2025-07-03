@@ -40,6 +40,56 @@ async function fixMentalHealthMigration() {
       structure.rows.forEach(row => {
         console.log(`- ${row.column_name} (${row.data_type})`);
       });
+
+      // List of required columns and their types
+      const requiredColumns = [
+        { name: 'id', type: 'uuid', definition: 'uuid NOT NULL DEFAULT uuid_generate_v4()' },
+        { name: 'user_id', type: 'uuid', definition: 'uuid NOT NULL' },
+        { name: 'mood', type: 'int', definition: 'integer NOT NULL DEFAULT 0' },
+        { name: 'stress', type: 'int', definition: 'integer NOT NULL DEFAULT 0' },
+        { name: 'sleep', type: 'int', definition: 'integer NOT NULL DEFAULT 0' },
+        { name: 'energy', type: 'int', definition: 'integer NOT NULL DEFAULT 0' },
+        { name: 'notes', type: 'text', definition: 'text' },
+        { name: 'risk_score', type: 'float', definition: 'float NOT NULL DEFAULT 0' },
+        { name: 'created_at', type: 'timestamp', definition: 'timestamp NOT NULL DEFAULT now()' }
+      ];
+
+      // Check and add missing columns
+      for (const col of requiredColumns) {
+        const exists = structure.rows.find(row => row.column_name === col.name);
+        if (!exists) {
+          console.log(`'${col.name}' column does not exist. Adding it as ${col.definition}...`);
+          await client.query(`ALTER TABLE mental_health_checks ADD COLUMN ${col.name} ${col.definition};`);
+          console.log(`✅ '${col.name}' column added successfully!`);
+        } else {
+          // Check type and alter if needed
+          let dbType = exists.data_type;
+          // Map Postgres types to JS types for comparison
+          if (col.type === 'uuid' && dbType !== 'uuid') {
+            console.log(`'${col.name}' column is type ${dbType}, but should be uuid. Altering...`);
+            await client.query(`ALTER TABLE mental_health_checks ALTER COLUMN ${col.name} TYPE uuid USING ${col.name}::uuid;`);
+            console.log(`✅ '${col.name}' column type changed to uuid!`);
+          } else if (col.type === 'int' && dbType !== 'integer') {
+            console.log(`'${col.name}' column is type ${dbType}, but should be integer. Altering...`);
+            await client.query(`ALTER TABLE mental_health_checks ALTER COLUMN ${col.name} TYPE integer USING ${col.name}::integer;`);
+            console.log(`✅ '${col.name}' column type changed to integer!`);
+          } else if (col.type === 'float' && dbType !== 'double precision' && dbType !== 'real') {
+            console.log(`'${col.name}' column is type ${dbType}, but should be float. Altering...`);
+            await client.query(`ALTER TABLE mental_health_checks ALTER COLUMN ${col.name} TYPE float USING ${col.name}::float;`);
+            console.log(`✅ '${col.name}' column type changed to float!`);
+          } else if (col.type === 'text' && dbType !== 'text') {
+            console.log(`'${col.name}' column is type ${dbType}, but should be text. Altering...`);
+            await client.query(`ALTER TABLE mental_health_checks ALTER COLUMN ${col.name} TYPE text USING ${col.name}::text;`);
+            console.log(`✅ '${col.name}' column type changed to text!`);
+          } else if (col.type === 'timestamp' && dbType !== 'timestamp without time zone') {
+            console.log(`'${col.name}' column is type ${dbType}, but should be timestamp. Altering...`);
+            await client.query(`ALTER TABLE mental_health_checks ALTER COLUMN ${col.name} TYPE timestamp USING ${col.name}::timestamp;`);
+            console.log(`✅ '${col.name}' column type changed to timestamp!`);
+          } else {
+            console.log(`✅ '${col.name}' column already exists with correct type.`);
+          }
+        }
+      }
     } else {
       console.log('❌ mental_health_checks table does not exist, creating it...');
       

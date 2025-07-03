@@ -295,7 +295,7 @@ const AuthPage = () => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-
+    
     try {
       // Basic validation
       if (!formData.email || !formData.password) {
@@ -357,10 +357,10 @@ const AuthPage = () => {
       }
 
       if (isLogin) {
-        localStorage.setItem('token', data.token);
-        if (data.user && data.user.id) {
-          try {
-            await triggerSidekickLogin(data.user);
+      localStorage.setItem('token', data.token);
+      if (data.user && data.user.id) {
+        try {
+          await triggerSidekickLogin(data.user);
           } catch {}
         }
         window.location.href = '/dashboard';
