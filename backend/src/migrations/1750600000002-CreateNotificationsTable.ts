@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, Index } from "typeorm";
+import { MigrationInterface, QueryRunner, Table, TableIndex } from "typeorm";
 
 export class CreateNotificationsTable1750600000002 implements MigrationInterface {
     name = 'CreateNotificationsTable1750600000002'
@@ -61,8 +61,8 @@ export class CreateNotificationsTable1750600000002 implements MigrationInterface
         );
 
         // Create indexes
-        await queryRunner.createIndex("notifications", new Index("IDX_NOTIFICATION_USER_READ", ["user_id", "read"]));
-        await queryRunner.createIndex("notifications", new Index("IDX_NOTIFICATION_CREATED_AT", ["created_at"]));
+        await queryRunner.createIndex("notifications", new TableIndex({ name: "IDX_NOTIFICATION_USER_READ", columnNames: ["user_id", "read"] }));
+        await queryRunner.createIndex("notifications", new TableIndex({ name: "IDX_NOTIFICATION_CREATED_AT", columnNames: ["created_at"] }));
         
         // Add foreign key constraint
         await queryRunner.query(`

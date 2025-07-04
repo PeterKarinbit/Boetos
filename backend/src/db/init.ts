@@ -30,10 +30,8 @@ export async function initializeDatabase() {
 
     if (!defaultUser) {
       const newUser = userRepository.create({
-        id: '2e5f217f-c892-469c-910b-20ed6c87ef5c',
         email: 'default.user@example.com',
-        name: 'Default User',
-        createdAt: new Date()
+        name: 'Default User'
       });
       await userRepository.save(newUser);
       console.log('Default user created');
