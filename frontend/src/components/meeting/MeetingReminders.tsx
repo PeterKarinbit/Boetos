@@ -35,7 +35,7 @@ const MeetingReminders: React.FC = () => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const { user } = useUser();
   const { theme } = useTheme();
-  const { showError } = useNotificationContext();
+  const { showError, showNotification } = useNotificationContext();
 
   const fetchReminders = async () => {
     if (!user) return;

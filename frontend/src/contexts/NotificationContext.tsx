@@ -37,6 +37,7 @@ interface NotificationContextType {
   showError: (message: string) => void;
   showInfo: (message: string) => void;
   showWarning: (message: string) => void;
+  showNotification: (options: { type: NotificationType; message: string }) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -75,6 +76,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         toast(message, toastOptions);
         break;
     }
+  };
+
+  const showNotification = ({ type, message }: { type: NotificationType; message: string }) => {
+    showToast(message, { type });
   };
 
   const showSuccess = (message: string) => showToast(message, { type: 'success' });
@@ -187,6 +192,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         showError,
         showInfo,
         showWarning,
+        showNotification,
       }}
     >
       {children}

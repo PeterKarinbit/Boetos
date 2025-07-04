@@ -36,7 +36,7 @@ export class Meeting {
   @ManyToOne(() => User, user => user.meetings)
   user!: User;
 
-  setUser(user: User) {
-    // ... existing code ...
+  setUser(user: User): void {
+    this.user = user;
   }
-} 
+}

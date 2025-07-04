@@ -55,7 +55,7 @@ export class UserVoiceSettings {
   @JoinColumn({ name: 'user_id' })
   user?: User;
 
-  setUser(user: User) {
-    // ... existing code ...
+  setUser(user: User): void {
+    this.user = user;
   }
-} 
+}

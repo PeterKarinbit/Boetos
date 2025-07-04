@@ -48,7 +48,7 @@ export class UserSchedule {
   @ManyToOne(() => User, user => user.activities)
   user?: User;
 
-  setUser(user: User) {
-    // ... existing code ...
+  setUser(user: User): void {
+    this.user = user;
   }
-} 
+}

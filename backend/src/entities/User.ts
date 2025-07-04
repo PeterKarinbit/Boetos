@@ -82,18 +82,19 @@ export class User {
   @OneToMany(() => AiInterventionRule, rule => rule.user)
   aiInterventionRules?: AiInterventionRule[];
 
-  setPreferences(preferences: UserPreferences) {
-    // Implementation of setPreferences method
+  setPreferences(preferences: UserPreferences): void {
+    this.preferencesRelation = preferences;
   }
 
-  setVoiceSettings(voiceSettings: UserVoiceSettings) {
-    // Implementation of setVoiceSettings method
+  setVoiceSettings(voiceSettings: UserVoiceSettings): void {
+    this.voiceSettings = voiceSettings;
   }
 
-  addActivity(activity: Activity) {
+  addActivity(activity: Activity): void {
     // Implementation of addActivity method
   }
 
+  addMeeting(meeting: Meeting): void {
   addMeeting(meeting: Meeting) {
     // Implementation of addMeeting method
   }
