@@ -45,7 +45,7 @@ const AppDataSource = new DataSource({
   logging: false, // Explicitly disable all TypeORM logging
   dropSchema: false,
   migrations: skipMigrations ? [] : [
-    path.join(__dirname, 'migrations-js', '*.{js,ts}') // Use converted JavaScript migrations
+    path.join(__dirname, '..', 'migrations', '*.{js,ts}') // Use top-level migrations directory
   ],
   extra: {
     // Connection pool settings for better resilience
