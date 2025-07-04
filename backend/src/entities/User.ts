@@ -95,23 +95,34 @@ export class User {
   }
 
   addMeeting(meeting: Meeting): void {
-  addMeeting(meeting: Meeting) {
-    // Implementation of addMeeting method
+    if (!this.meetings) {
+      this.meetings = [];
+    }
+    this.meetings.push(meeting);
   }
 
-  addAiInterventionRule(rule: AiInterventionRule) {
-    // Implementation of addAiInterventionRule method
+  addAiInterventionRule(rule: AiInterventionRule): void {
+    if (!this.aiInterventionRules) {
+      this.aiInterventionRules = [];
+    }
+    this.aiInterventionRules.push(rule);
   }
 
-  setActivity(activity: Activity) {
-    // Implementation of setActivity method
+  setActivity(activity: Activity): void {
+    if (!this.activities) {
+      this.activities = [];
+    }
+    this.activities.push(activity);
   }
 
-  setMeeting(meeting: Meeting) {
-    // Implementation of setMeeting method
+  setMeeting(meeting: Meeting): void {
+    if (!this.meetings) {
+      this.meetings = [];
+    }
+    this.meetings.push(meeting);
   }
 
-  setRule(rule: AiInterventionRule) {
+  setRule(rule: AiInterventionRule): void {
     // Implementation of setRule method
   }
 } 
