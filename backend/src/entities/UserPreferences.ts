@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { User } from '../entities/User';
+import { User } from './User';
 
 @Entity('user_preferences')
 export class UserPreferences {
@@ -52,7 +52,7 @@ export class UserPreferences {
   @JoinColumn({ name: 'user_id' })
   user?: User;
 
-  setUser(user: any) {
+  setUser(user: User) {
     // ... existing code ...
   }
 } 

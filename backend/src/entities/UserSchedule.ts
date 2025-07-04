@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { User } from '../entities/User';
+import { User } from './User';
 
 @Entity('user_schedule')
 export class UserSchedule {
@@ -48,7 +48,7 @@ export class UserSchedule {
   @ManyToOne(() => User, user => user.activities)
   user?: User;
 
-  setUser(user: any) {
+  setUser(user: User) {
     // ... existing code ...
   }
 } 
