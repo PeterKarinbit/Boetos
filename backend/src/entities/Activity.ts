@@ -23,4 +23,8 @@ export class Activity {
 
   @ManyToOne(() => User, user => user.activities)
   user!: User;
+
+  setUser(user: User) {
+    // ... existing code ...
+  }
 } 

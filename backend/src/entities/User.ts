@@ -101,4 +101,16 @@ export class User {
   addAiInterventionRule(rule: AiInterventionRule) {
     // Implementation of addAiInterventionRule method
   }
+
+  setActivity(activity: Activity) {
+    // Implementation of setActivity method
+  }
+
+  setMeeting(meeting: Meeting) {
+    // Implementation of setMeeting method
+  }
+
+  setRule(rule: AiInterventionRule) {
+    // Implementation of setRule method
+  }
 } 
