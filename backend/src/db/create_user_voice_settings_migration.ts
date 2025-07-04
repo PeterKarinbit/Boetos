@@ -108,10 +108,10 @@ export class CreateUserVoiceSettings1687015369742 implements MigrationInterface 
     public async down(queryRunner: QueryRunner): Promise<void> {
         // First drop the foreign key
         const table = await queryRunner.getTable("user_voice_settings");
-        const foreignKey = table.foreignKeys.find(
-            (fk) => fk.columnNames.indexOf("user_id") !== -1
-        );
-        await queryRunner.dropForeignKey("user_voice_settings", foreignKey);
+        const foreignKeys = table.foreignKeys;
+        foreignKeys.forEach((fk: any) => {
+            await queryRunner.dropForeignKey("user_voice_settings", fk);
+        });
 
         // Then drop the table
         await queryRunner.dropTable("user_voice_settings");

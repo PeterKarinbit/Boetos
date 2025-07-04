@@ -10,7 +10,7 @@ export class UpdateUserPreferencesTable1718039700000 implements MigrationInterfa
         if (tableExists) {
             // Add any missing columns
             const columns = await queryRunner.getTable("user_preferences");
-            const columnNames = columns?.columns.map(col => col.name) || [];
+            const columnNames = columns?.columns.map((col: any) => col.name) || [];
 
             // Add missing columns if they don't exist
             if (!columnNames.includes("ai_tone_preference")) {

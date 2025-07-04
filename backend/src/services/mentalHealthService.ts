@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { OpenViewerClient } from '../lib/openviewer';
+import { BurnoutCalculator } from '../lib/burnoutCalculator';
 // import { BurnoutCalculator } from '../lib/burnoutCalculator'; // TODO: Implement or restore this module if needed
 
 const openviewer = new OpenViewerClient({
@@ -98,7 +99,7 @@ export class MentalHealthService {
     
     // Calculate burnout score using the burnout calculator
     const calculator = new BurnoutCalculator();
-    const score = calculator.calculateBurnoutScore(calendarData);
+    const score = calculator.calculate(calendarData);
     
     // Adjust score based on mental health data
     const adjustedScore = this.adjustScoreWithMentalHealthData(score, data);

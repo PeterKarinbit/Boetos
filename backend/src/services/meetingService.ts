@@ -46,7 +46,7 @@ export class MeetingService {
     // Simple scoring logic based on event properties
     let score = 0;
     const now = new Date();
-    const startTime = new Date(event.startTime);
+    const startTime = event.startTime ? new Date(event.startTime) : new Date();
     const timeToMeeting = (startTime.getTime() - now.getTime()) / (1000 * 60); // in minutes
 
     if (timeToMeeting < 30) {

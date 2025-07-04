@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { User } from './User';
+import { User } from '../entities/User';
 
 @Entity('user_preferences')
 export class UserPreferences {
@@ -51,4 +51,8 @@ export class UserPreferences {
   @OneToOne(() => User, user => user.preferencesRelation)
   @JoinColumn({ name: 'user_id' })
   user?: User;
+
+  setUser(user: any) {
+    // ... existing code ...
+  }
 } 

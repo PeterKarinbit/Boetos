@@ -32,7 +32,7 @@ export class CalendarService {
     }));
 
     // Use a transaction to ensure atomicity
-    await AppDataSource.transaction(async (transactionalEntityManager) => {
+    await AppDataSource.transaction(async (transactionalEntityManager: any) => {
       // Mark old events as cancelled
       await transactionalEntityManager.update(UserSchedule, 
         { userId, source: 'GOOGLE_CALENDAR' },

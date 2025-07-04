@@ -35,4 +35,8 @@ export class AiInterventionRule {
 
   @ManyToOne(() => User, user => user.aiInterventionRules, { onDelete: 'CASCADE' })
   user?: User;
+
+  setUser(user: any) {
+    // ... existing code ...
+  }
 } 

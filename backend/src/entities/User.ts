@@ -81,4 +81,24 @@ export class User {
 
   @OneToMany(() => AiInterventionRule, rule => rule.user)
   aiInterventionRules?: AiInterventionRule[];
+
+  setPreferences(preferences: any) {
+    // Implementation of setPreferences method
+  }
+
+  setVoiceSettings(voiceSettings: any) {
+    // Implementation of setVoiceSettings method
+  }
+
+  addActivity(activity: any) {
+    // Implementation of addActivity method
+  }
+
+  addMeeting(meeting: any) {
+    // Implementation of addMeeting method
+  }
+
+  addAiInterventionRule(rule: any) {
+    // Implementation of addAiInterventionRule method
+  }
 } 
