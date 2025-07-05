@@ -201,23 +201,7 @@ const initDataSource = async (): Promise<DataSource> => {
 };
 
 // Create and export the data source
-let AppDataSource: DataSource;
-
-const initializeAppDataSource = async () => {
-  AppDataSource = await initDataSource();
-  return AppDataSource;
-};
-
-// Initialize immediately
-initializeAppDataSource().catch(error => {
-  logger.error('Failed to initialize AppDataSource:', error);
-  process.exit(1);
-});
-
-module.exports = {
-  initializeDataSource,
-  checkConnection
-};
+export const AppDataSource = new DataSource(dataSourceOptions);
 
 // Handle process termination
 process.on('SIGINT', async () => {
