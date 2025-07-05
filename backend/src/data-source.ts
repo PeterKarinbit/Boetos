@@ -1,46 +1,10 @@
 import 'dotenv/config';
 import 'reflect-metadata';
-import { DataSource, DataSourceOptions, QueryRunner } from 'typeorm';
+import { DataSource, DataSourceOptions, QueryRunner, LoggerOptions } from 'typeorm';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import path from 'path';
 import { config } from './config/index';
 import logger from './utils/logger';
-
-export type PostgresConnectionOptions = {
-  type: 'postgres';
-  host?: string;
-  port?: number;
-  username?: string;
-  password?: string;
-  database?: string;
-  url?: string;
-  ssl?: boolean | { rejectUnauthorized: boolean };
-  entities?: any[];
-  synchronize?: boolean;
-  migrationsRun?: boolean;
-  logging?: boolean | string[];
-  migrations?: string[];
-  dropSchema?: boolean;
-  extra?: {
-    max?: number;
-    min?: number;
-    idleTimeoutMillis?: number;
-    connectionTimeoutMillis?: number;
-    query_timeout?: number;
-    statement_timeout?: number;
-    idle_in_transaction_session_timeout?: number;
-    keepAlive?: boolean;
-    keepAliveInitialDelayMillis?: number;
-    ssl?: {
-      rejectUnauthorized: boolean;
-      keepAlive: boolean;
-    };
-  };
-  retryAttempts?: number;
-  retryDelay?: number;
-  keepConnectionAlive?: boolean;
-  connectTimeoutMS?: number;
-  application_name?: string;
-};
 
 // Validate required environment variables
 const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASS', 'DB_NAME'];
@@ -103,17 +67,10 @@ const dataSourceOptions: PostgresConnectionOptions = {
       keepAlive: true,
     },
   },
-  retryAttempts: 5, // Reduced retry attempts
-  retryDelay: 1000, // Reduced delay between retries
-  keepConnectionAlive: true,
-  connectTimeoutMS: 30000, // Reduced connection timeout
-  application_name: 'boetos-backend'
 };
 
 let isInitialized = false;
 let isInitializing = false;
-
-let AppDataSource: DataSource;
 
 const checkConnection = async (): Promise<boolean> => {
   if (!AppDataSource?.isInitialized) {
@@ -165,12 +122,16 @@ const initializeDataSource = async (): Promise<DataSource> => {
 
   // If already initialized but connection is dead, destroy and re-initialize
   if (AppDataSource.isInitialized) {
-    try {
-      logger.info('initializeDataSource: Destroying existing connection');
-      await AppDataSource.destroy();
-    } catch (error) {
-      logger.warn('Error destroying existing connection:', error.message);
-    }
+          try {
+        logger.info('initializeDataSource: Destroying existing connection');
+        await AppDataSource.destroy();
+      } catch (error) {
+        if (error instanceof Error) {
+          logger.warn('Error destroying existing connection:', error.message);
+        } else {
+          logger.warn('Error destroying existing connection:', error);
+        }
+      }
     isInitialized = false;
   }
 
@@ -221,6 +182,7 @@ const initializeDataSource = async (): Promise<DataSource> => {
     }
   }
   isInitializing = false;
+  throw new Error('Failed to initialize data source after all retries');
 };
 
 // Initialize the data source
@@ -239,9 +201,23 @@ const initDataSource = async (): Promise<DataSource> => {
 };
 
 // Create and export the data source
-AppDataSource = await initDataSource();
+let AppDataSource: DataSource;
 
-export { AppDataSource };
+const initializeAppDataSource = async () => {
+  AppDataSource = await initDataSource();
+  return AppDataSource;
+};
+
+// Initialize immediately
+initializeAppDataSource().catch(error => {
+  logger.error('Failed to initialize AppDataSource:', error);
+  process.exit(1);
+});
+
+module.exports = {
+  initializeDataSource,
+  checkConnection
+};
 
 // Handle process termination
 process.on('SIGINT', async () => {
@@ -300,10 +276,4 @@ if (process.env.SKIP_DB_INIT !== 'true') {
     logger.error('Failed to initialize Data Source after retries:', error);
     // Don't exit here, let the app decide what to do
   });
-}
-
-module.exports = {
-  AppDataSource,
-  initializeDataSource,
-  checkConnection
-}; 
+} 

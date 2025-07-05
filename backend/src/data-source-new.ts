@@ -73,7 +73,7 @@ const skipMigrations = process.env.SKIP_MIGRATIONS === 'true';
 
 const dataSourceOptions: PostgresConnectionOptions = {
   type: 'postgres',
-  url: config.postgresUri,
+  url: process.env.DATABASE_URL,
   ssl: getSslConfig(),
   entities: [
     path.join(__dirname, 'entities', '*.{js,ts}')
@@ -242,4 +242,12 @@ process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 // Initialize and export the data source
 export const dataSource = initDataSource();
 
-export default AppDataSource;
+// Export a function that returns the initialized data source
+export const getDataSource = async (): Promise<DataSource> => {
+  if (!AppDataSource || !AppDataSource.isInitialized) {
+    return await dataSource;
+  }
+  return AppDataSource;
+};
+
+export default getDataSource;
