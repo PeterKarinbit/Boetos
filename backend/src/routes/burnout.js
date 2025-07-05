@@ -8,6 +8,8 @@ const { AppDataSource } = require('../data-source');
 const CalendarEvent = require('../entities/CalendarEvent');
 const { Between, MoreThanOrEqual, LessThanOrEqual } = require('typeorm');
 
+console.log('Looking for:', require('fs').existsSync(require('path').join(__dirname, '../services/burnout/analyzer.js')));
+
 // Apply auth middleware to all burnout routes
 router.use(authMiddleware);
 
