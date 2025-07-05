@@ -1,6 +1,16 @@
 import axios from 'axios';
 import { isTokenExpired, isTokenAboutToExpire } from '../utils/tokenUtils';
 
+// Get backend URL from environment or use a default
+const getBackendUrl = () => {
+  // In production, use the deployed backend URL
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_BACKEND_URL || 'https://your-backend-app.onrender.com';
+  }
+  // In development, use localhost
+  return import.meta.env.VITE_BACKEND_URL || 'http://localhost:4001';
+};
+
 // Function to refresh token
 const refreshToken = async (): Promise<string | null> => {
   try {
@@ -8,7 +18,7 @@ const refreshToken = async (): Promise<string | null> => {
     if (!token) return null;
 
     const response = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:4001'}/api/auth/refresh`,
+      `${getBackendUrl()}/api/auth/refresh`,
       {},
       {
         headers: {
@@ -30,7 +40,7 @@ const refreshToken = async (): Promise<string | null> => {
 };
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:4001',
+  baseURL: getBackendUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
