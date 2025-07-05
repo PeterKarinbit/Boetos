@@ -97,7 +97,7 @@ const checkConnection = async (): Promise<boolean> => {
   }
 };
 
-const initializeDataSource = async (): Promise<DataSource> => {
+export const initializeDataSource = async (): Promise<DataSource> => {
   if (isInitialized && await checkConnection()) {
     logger.info('initializeDataSource: Already initialized and connection is healthy');
     return AppDataSource;
