@@ -1,6 +1,13 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
+import cors from 'cors';
 
 const app: Application = express();
+
+// CORS configuration for Netlify frontend
+app.use(cors({
+  origin: ['https://boetos.netlify.app'],
+  credentials: true,
+}));
 
 // Basic middleware
 app.use(express.json({ limit: '10mb' }));

@@ -226,7 +226,7 @@ const AuthPage = () => {
   async function triggerSidekickLogin(user: any) {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/sidekick/event`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/sidekick/event`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -257,7 +257,7 @@ const AuthPage = () => {
         // If voice enabled, trigger TTS
         if (user.voiceSettings?.voice_enabled) {
           try {
-            const ttsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/voice/text-to-speech`, {
+            const ttsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/voice/text-to-speech`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -316,8 +316,8 @@ const AuthPage = () => {
       }
 
       const endpoint = isLogin
-        ? `${import.meta.env.VITE_BACKEND_URL}/api/auth/login`
-        : `${import.meta.env.VITE_BACKEND_URL}/api/auth/register`;
+        ? `${import.meta.env.VITE_API_URL}/api/auth/login`
+        : `${import.meta.env.VITE_API_URL}/api/auth/register`;
 
       const body = isLogin
         ? {
@@ -423,7 +423,7 @@ const AuthPage = () => {
               {error}
             </div>
           )}
-          <button type="button" onClick={() => {window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/oauth/google`;}} className="w-full flex items-center justify-center gap-3 py-4 px-6 mb-8 font-semibold rounded-xl transition-all duration-300 border border-[#FF6600]/30 backdrop-blur-md hover:shadow-xl relative overflow-hidden group bg-white/10 text-[#FF6600] hover:bg-white/20">
+          <button type="button" onClick={() => {window.location.href = `${import.meta.env.VITE_API_URL}/api/oauth/google`;}} className="w-full flex items-center justify-center gap-3 py-4 px-6 mb-8 font-semibold rounded-xl transition-all duration-300 border border-[#FF6600]/30 backdrop-blur-md hover:shadow-xl relative overflow-hidden group bg-white/10 text-[#FF6600] hover:bg-white/20">
             <span className="relative z-10">Continue with Google</span>
           </button>
           <div className="flex items-center my-6">
