@@ -5,15 +5,17 @@
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "build": "tsc",
-    "start": "node src/index.js",
-    "typeorm": "node -r dotenv/config --require ts-node/register ./node_modules/typeorm/cli.js",
-    "migrate": "node src/migrate.js",
-    "migration:run": "node -r dotenv/config ./node_modules/typeorm/cli.js migration:run -d src/data-source.js",
-    "migration:revert": "node -r dotenv/config ./node_modules/typeorm/cli.js migration:revert -d src/data-source.js",
-    "clean-start": "node src/clean-start.js",
-    "clean-dev": "nodemon src/clean-start.js"
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "rimraf dist && tsc && copyfiles -u 1 src/**/*.js src/**/*.json src/**/*.graphql src/**/*.gql dist/",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit",
+    "typeorm": "ts-node --transpile-only ./node_modules/typeorm/cli.js",
+    "migrate": "ts-node src/migrate.ts",
+    "migration:run": "ts-node -r dotenv/config ./node_modules/typeorm/cli-ts-node-commonjs.js migration:run -d src/data-source.ts",
+    "migration:revert": "ts-node -r dotenv/config ./node_modules/typeorm/cli-ts-node-commonjs.js migration:revert -d src/data-source.ts",
+    "clean-start": "ts-node src/clean-start.ts",
+    "clean-dev": "nodemon --exec ts-node src/clean-start.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@langchain/google-genai": "^0.2.13",
@@ -46,12 +48,18 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.23",
     "@types/express-session": "^1.18.2",
-    "@types/jsonwebtoken": "^9.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/multer": "^1.4.11",
     "@types/node": "^20.19.4",
+    "@types/node-cron": "^3.0.11",
     "@types/passport": "^1.0.17",
-    "@types/passport-google-oauth20": "^2.0.0",
+    "@types/passport-google-oauth20": "^2.0.16",
+    "@types/pg": "^8.11.11",
+    "copyfiles": "^2.4.1",
     "nodemon": "^3.1.0",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   }
 }

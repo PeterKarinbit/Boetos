@@ -1,4 +1,4 @@
-import { AppDataSource } from '../data-source';
+import { dataSource } from '../data-source-new';
 import { UserSchedule } from '../entities/UserSchedule';
 import { User } from '../entities/User';
 import { In, MoreThan } from 'typeorm';
@@ -6,43 +6,62 @@ import { In, MoreThan } from 'typeorm';
 const apiKey = process.env.GOOGLE_API_KEY;
 
 export class CalendarService {
-  private userScheduleRepository = AppDataSource.getRepository(UserSchedule);
-  private userRepository = AppDataSource.getRepository(User);
+  private userScheduleRepository = dataSource.then(ds => ds.getRepository(UserSchedule));
+  private userRepository = dataSource.then(ds => ds.getRepository(User));
 
   constructor() {}
 
   async syncUserCalendar(userId: string, events: any[]): Promise<void> {
-    const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new Error(`User with ID ${userId} does not exist.`);
-    }
+    const dataSourceInstance = await dataSource;
+    const queryRunner = dataSourceInstance.createQueryRunner();
+    
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    
+    try {
+      const user = await (await this.userRepository).findOneBy({ id: userId });
+      if (!user) {
+        throw new Error(`User with ID ${userId} does not exist.`);
+      }
 
-    const schedulesToUpsert = events.map(event => ({
-      userId,
-      eventId: event.id,
-      title: event.summary,
-      description: event.description,
-      startTime: new Date(event.start.dateTime || event.start.date),
-      endTime: new Date(event.end.dateTime || event.end.date),
-      location: event.location,
-      eventType: this.determineEventType(event),
-      source: 'GOOGLE_CALENDAR',
-      isAllDay: !!event.start.date && !event.start.dateTime,
-      status: 'CONFIRMED',
-    }));
+      const schedulesToUpsert = events.map(event => ({
+        userId,
+        eventId: event.id,
+        title: event.summary,
+        description: event.description,
+        startTime: new Date(event.start.dateTime || event.start.date),
+        endTime: new Date(event.end.dateTime || event.end.date),
+        location: event.location,
+        eventType: this.determineEventType(event),
+        source: 'GOOGLE_CALENDAR',
+        isAllDay: !!event.start.date && !event.start.dateTime,
+        status: 'CONFIRMED',
+      }));
 
-    // Use a transaction to ensure atomicity
-    await AppDataSource.transaction(async (transactionalEntityManager: any) => {
       // Mark old events as cancelled
-      await transactionalEntityManager.update(UserSchedule, 
+      const userScheduleRepo = await this.userScheduleRepository;
+      await queryRunner.manager.update(
+        userScheduleRepo.metadata.target as any,
         { userId, source: 'GOOGLE_CALENDAR' },
         { status: 'CANCELLED' }
       );
-      // Upsert new events
+      
+      // Upsert new events if there are any
       if (schedulesToUpsert.length > 0) {
-        await transactionalEntityManager.upsert(UserSchedule, schedulesToUpsert, ['userId', 'eventId']);
+        await queryRunner.manager.upsert(
+          userScheduleRepo.metadata.target as any,
+          schedulesToUpsert,
+          ['userId', 'eventId']
+        );
       }
-    });
+      
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async getUserEvents(
@@ -50,7 +69,8 @@ export class CalendarService {
     startTime: Date,
     endTime: Date
   ): Promise<UserSchedule[]> {
-    return this.userScheduleRepository.find({
+    const repo = await this.userScheduleRepository;
+    return repo.find({
       where: {
         userId,
         startTime: MoreThan(startTime),
@@ -64,10 +84,12 @@ export class CalendarService {
   }
 
   async getUpcomingEvents(userId: string, limit: number = 5): Promise<UserSchedule[]> {
-    return this.userScheduleRepository.find({
+    const repo = await this.userScheduleRepository;
+    const now = new Date();
+    return repo.find({
       where: {
         userId,
-        startTime: MoreThan(new Date()),
+        startTime: MoreThan(now),
         status: 'CONFIRMED',
       },
       order: {

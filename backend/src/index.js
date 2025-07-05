@@ -2,7 +2,7 @@ require('dotenv/config');
 require('reflect-metadata');
 const app = require('./app');
 const config = require('./config');
-const { initializeDataSource } = require('./data-source');
+const { initializeDataSource } = require('./data-source-wrapper');
 const logger = require('./utils/logger');
 
 // Import routes

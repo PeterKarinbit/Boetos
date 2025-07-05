@@ -1,9 +1,8 @@
 import 'dotenv/config';
-import { AppDataSource } from '../data-source';
+import { dataSource } from '../data-source-new';
 import { User } from '../entities/User';
 import { UserPreferences } from '../entities/UserPreferences';
 import { AiInterventionRule } from '../entities/AiInterventionRule';
-import ChatMessage from '../entities/ChatMessage';
 
 // Re-export types for convenience
 export type { User, UserPreferences, AiInterventionRule };
@@ -11,19 +10,21 @@ export type { User, UserPreferences, AiInterventionRule };
 export async function initializeDatabase() {
   try {
     // Initialize TypeORM connection
-    if (!AppDataSource.isInitialized) {
-      await AppDataSource.initialize();
+    const dataSourceInstance = await dataSource;
+    
+    if (!dataSourceInstance.isInitialized) {
+      await dataSourceInstance.initialize();
       
       // Run migrations if needed
       if (process.env.NODE_ENV !== 'production') {
         console.log('Running migrations...');
-        await AppDataSource.runMigrations();
+        await dataSourceInstance.runMigrations();
         console.log('Migrations completed successfully');
       }
     }
 
     // Create default user if it doesn't exist
-    const userRepository = AppDataSource.getRepository(User);
+    const userRepository = dataSourceInstance.getRepository(User);
     const defaultUser = await userRepository.findOne({
       where: { email: 'default.user@example.com' }
     });
@@ -38,8 +39,9 @@ export async function initializeDatabase() {
     }
 
     console.log('Database initialized successfully');
+    return dataSourceInstance;
   } catch (error) {
     console.error('Error initializing database:', error);
     throw error;
   }
-} 
+}

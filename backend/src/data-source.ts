@@ -1,9 +1,46 @@
-require('dotenv/config');
-require('reflect-metadata');
-const { DataSource } = require('typeorm');
-const path = require('path');
-const config = require('./config');
-const logger = require('./utils/logger'); // Import the logger
+import 'dotenv/config';
+import 'reflect-metadata';
+import { DataSource, DataSourceOptions, QueryRunner } from 'typeorm';
+import path from 'path';
+import { config } from './config/index';
+import logger from './utils/logger';
+
+export type PostgresConnectionOptions = {
+  type: 'postgres';
+  host?: string;
+  port?: number;
+  username?: string;
+  password?: string;
+  database?: string;
+  url?: string;
+  ssl?: boolean | { rejectUnauthorized: boolean };
+  entities?: any[];
+  synchronize?: boolean;
+  migrationsRun?: boolean;
+  logging?: boolean | string[];
+  migrations?: string[];
+  dropSchema?: boolean;
+  extra?: {
+    max?: number;
+    min?: number;
+    idleTimeoutMillis?: number;
+    connectionTimeoutMillis?: number;
+    query_timeout?: number;
+    statement_timeout?: number;
+    idle_in_transaction_session_timeout?: number;
+    keepAlive?: boolean;
+    keepAliveInitialDelayMillis?: number;
+    ssl?: {
+      rejectUnauthorized: boolean;
+      keepAlive: boolean;
+    };
+  };
+  retryAttempts?: number;
+  retryDelay?: number;
+  keepConnectionAlive?: boolean;
+  connectTimeoutMS?: number;
+  application_name?: string;
+};
 
 // Validate required environment variables
 const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASS', 'DB_NAME'];
@@ -33,16 +70,16 @@ const getSslConfig = () => {
 
 const skipMigrations = process.env.SKIP_MIGRATIONS === 'true';
 
-const AppDataSource = new DataSource({
+const dataSourceOptions: PostgresConnectionOptions = {
   type: 'postgres',
-  url: config.postgresUri,
+  url: process.env.DATABASE_URL,
   ssl: getSslConfig(),
   entities: [
     path.join(__dirname, 'entities', '*.{js,ts}')
   ],
   synchronize: false, // Disable auto-synchronization
   migrationsRun: !skipMigrations, // Only run migrations if not skipping
-  logging: false, // Explicitly disable all TypeORM logging
+  logging: false, // Use only allowed TypeORM values for logging
   dropSchema: false,
   migrations: skipMigrations ? [] : [
     path.join(__dirname, '..', 'migrations', '*.{js,ts}') // Use top-level migrations directory
@@ -71,13 +108,15 @@ const AppDataSource = new DataSource({
   keepConnectionAlive: true,
   connectTimeoutMS: 30000, // Reduced connection timeout
   application_name: 'boetos-backend'
-});
+};
 
 let isInitialized = false;
 let isInitializing = false;
 
-const checkConnection = async () => {
-  if (!AppDataSource || !AppDataSource.isInitialized) {
+let AppDataSource: DataSource;
+
+const checkConnection = async (): Promise<boolean> => {
+  if (!AppDataSource?.isInitialized) {
     logger.info('checkConnection: DataSource not initialized');
     return false;
   }
@@ -91,16 +130,25 @@ const checkConnection = async () => {
     ]);
     logger.info('checkConnection: Success');
     return result && result.length > 0;
-  } catch (error) {
-    logger.error('Database connection check failed:', error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      logger.error('Database connection check failed:', error.message);
+    } else {
+      logger.error('Database connection check failed with unknown error');
+    }
     return false;
   }
 };
 
-const initializeDataSource = async () => {
+const initializeDataSource = async (): Promise<DataSource> => {
   if (isInitialized && await checkConnection()) {
     logger.info('initializeDataSource: Already initialized and connection is healthy');
     return AppDataSource;
+  }
+  
+  // Ensure we have a valid data source
+  if (!AppDataSource) {
+    throw new Error('Data source not properly initialized');
   }
 
   if (isInitializing) {
@@ -151,51 +199,76 @@ const initializeDataSource = async () => {
           } else {
             logger.info('No pending migrations found');
           }
-        } catch (migrationError) {
-          logger.warn('Migration check failed, attempting to continue:', migrationError.message);
-          // Try to run migrations anyway, but don't fail the entire initialization
-          try {
-            const migrations = await AppDataSource.runMigrations();
-            if (migrations.length > 0) {
-              logger.info(`Successfully executed ${migrations.length} migrations`);
-            }
-          } catch (runMigrationError) {
-            logger.error('Failed to run migrations:', runMigrationError.message);
-            // Don't throw here, let the application continue
+        } catch (runMigrationError: unknown) {
+          if (runMigrationError instanceof Error) {
+            logger.error('Error running migrations:', runMigrationError.message);
+          } else {
+            logger.error('Unknown error running migrations');
           }
+          const errorMessage = runMigrationError instanceof Error ? runMigrationError.message : 'Unknown error';
+          logger.error('Failed to run migrations:', errorMessage);
+          // Don't throw here, let the application continue
         }
         isInitialized = true;
       }
       logger.info('initializeDataSource: Initialization complete');
       isInitializing = false;
       return AppDataSource;
-    } catch (error) {
-      logger.error('Error during Data Source initialization:', error.message);
-      retries--;
-      if (retries === 0) {
-        isInitializing = false;
-        throw error;
-      }
-      logger.info(`Retrying... ${retries} attempts left`);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Reduced delay
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Error during data source initialization:', errorMessage);
+      throw error;
     }
   }
   isInitializing = false;
 };
 
+// Initialize the data source
+const initDataSource = async (): Promise<DataSource> => {
+  try {
+    const dataSource = new DataSource(dataSourceOptions);
+    await dataSource.initialize();
+    isInitialized = true;
+    logger.info('Data Source has been initialized!');
+    return dataSource;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error initializing data source:', errorMessage);
+    throw new Error(`Failed to initialize data source: ${errorMessage}`);
+  }
+};
+
+// Create and export the data source
+AppDataSource = await initDataSource();
+
+export { AppDataSource };
+
 // Handle process termination
 process.on('SIGINT', async () => {
-  if (AppDataSource.isInitialized) {
-    await AppDataSource.destroy();
-    logger.info('Database connection closed');
+  try {
+    if (AppDataSource?.isInitialized) {
+      await AppDataSource.destroy();
+      logger.info('Data Source has been disconnected');
+    }
+    process.exit(0);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error during shutdown:', errorMessage);
+    process.exit(1);
   }
-  process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  if (AppDataSource.isInitialized) {
-    await AppDataSource.destroy();
-    logger.info('Database connection closed');
+  try {
+    if (AppDataSource?.isInitialized) {
+      await AppDataSource.destroy();
+      logger.info('Data Source has been disconnected');
+    }
+    process.exit(0);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error during shutdown:', errorMessage);
+    process.exit(1);
   }
   process.exit(0);
 });
