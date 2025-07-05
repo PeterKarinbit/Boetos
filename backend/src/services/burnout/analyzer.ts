@@ -1,9 +1,12 @@
-const BurnoutCalculator = require('./calculator');
-const PatternDetector = require('./pattern-detector');
-const DeepSeekService = require('../llm/deepseek-engine');
+// @ts-ignore
+import BurnoutCalculator from './calculator';
+// @ts-ignore
+import PatternDetector from './pattern-detector';
+// @ts-ignore
+import DeepSeekService from '../llm/deepseek-engine';
 
 class BurnoutAnalyzer {
-  async analyzeBurnout(calendarData) {
+  async analyzeBurnout(calendarData: any[]): Promise<any> {
     try {
       // Calculate traditional burnout score
       const score = BurnoutCalculator.calculateBurnoutScore(calendarData);
@@ -37,43 +40,43 @@ class BurnoutAnalyzer {
     }
   }
 
-  _getBurnoutLevel(score) {
+  _getBurnoutLevel(score: number): string {
     if (score >= 7.5) return 'High Risk';
     if (score >= 5) return 'Moderate Risk';
     if (score >= 2.5) return 'Low Risk';
     return 'Minimal Risk';
   }
 
-  _calculateMeetingDensity(calendarData) {
+  _calculateMeetingDensity(calendarData: any[]): number {
     const meetings = calendarData.filter(event => event.type === 'meeting');
     const totalHours = 24;
     const meetingHours = meetings.reduce((total, meeting) => {
-      const duration = (new Date(meeting.end) - new Date(meeting.start)) / (1000 * 60 * 60);
+      const duration = (new Date(meeting.end).getTime() - new Date(meeting.start).getTime()) / (1000 * 60 * 60);
       return total + duration;
     }, 0);
 
     return (meetingHours / totalHours) * 100;
   }
 
-  _calculateWorkHours(calendarData) {
+  _calculateWorkHours(calendarData: any[]): number {
     const workEvents = calendarData.filter(event => 
       event.type === 'meeting' || event.type === 'task'
     );
 
     return workEvents.reduce((total, event) => {
-      const duration = (new Date(event.end) - new Date(event.start)) / (1000 * 60 * 60);
+      const duration = (new Date(event.end).getTime() - new Date(event.start).getTime()) / (1000 * 60 * 60);
       return total + duration;
     }, 0);
   }
 
-  _calculateBreakScore(calendarData) {
-    const events = calendarData.sort((a, b) => new Date(a.start) - new Date(b.start));
+  _calculateBreakScore(calendarData: any[]): number {
+    const events = calendarData.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
     let breakScore = 100;
-    let lastEventEnd = null;
+    let lastEventEnd: string | null = null;
 
     for (const event of events) {
       if (lastEventEnd) {
-        const breakDuration = (new Date(event.start) - new Date(lastEventEnd)) / (1000 * 60);
+        const breakDuration = (new Date(event.start).getTime() - new Date(lastEventEnd).getTime()) / (1000 * 60);
         if (breakDuration < 15) {
           breakScore -= 20;
         }
@@ -84,21 +87,21 @@ class BurnoutAnalyzer {
     return Math.max(0, breakScore);
   }
 
-  _hasWeekendWork(calendarData) {
+  _hasWeekendWork(calendarData: any[]): boolean {
     return calendarData.some(event => {
       const date = new Date(event.start);
       return date.getDay() === 0 || date.getDay() === 6;
     });
   }
 
-  _calculateIntensity(calendarData) {
+  _calculateIntensity(calendarData: any[]): number {
     const meetings = calendarData.filter(event => event.type === 'meeting');
     let intensityScore = 100;
 
     // Check for back-to-back meetings
-    const sortedMeetings = meetings.sort((a, b) => new Date(a.start) - new Date(b.start));
+    const sortedMeetings = meetings.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
     for (let i = 1; i < sortedMeetings.length; i++) {
-      const gap = (new Date(sortedMeetings[i].start) - new Date(sortedMeetings[i-1].end)) / (1000 * 60);
+      const gap = (new Date(sortedMeetings[i].start).getTime() - new Date(sortedMeetings[i-1].end).getTime()) / (1000 * 60);
       if (gap < 15) {
         intensityScore -= 20;
       }
@@ -106,7 +109,7 @@ class BurnoutAnalyzer {
 
     // Check for long meetings (>1 hour)
     const longMeetings = meetings.filter(meeting => {
-      const duration = (new Date(meeting.end) - new Date(meeting.start)) / (1000 * 60);
+      const duration = (new Date(meeting.end).getTime() - new Date(meeting.start).getTime()) / (1000 * 60);
       return duration > 60;
     });
     intensityScore -= longMeetings.length * 10;
@@ -114,7 +117,7 @@ class BurnoutAnalyzer {
     return Math.max(0, intensityScore);
   }
 
-  _formatPatterns(patterns) {
+  _formatPatterns(patterns: any[]): any[] {
     return patterns.map(pattern => ({
       type: pattern.type,
       description: this._generatePatternDescription(pattern),
@@ -122,7 +125,7 @@ class BurnoutAnalyzer {
     }));
   }
 
-  _generatePatternDescription(pattern) {
+  _generatePatternDescription(pattern: any): string {
     switch (pattern.type) {
       case 'high-meeting-day':
         return `${pattern.count} meetings on ${pattern.day}`;
@@ -139,7 +142,7 @@ class BurnoutAnalyzer {
     }
   }
 
-  _calculatePatternSeverity(pattern) {
+  _calculatePatternSeverity(pattern: any): string {
     switch (pattern.type) {
       case 'high-meeting-day':
         return pattern.count >= 6 ? 'high' : pattern.count >= 4 ? 'medium' : 'low';
@@ -156,20 +159,18 @@ class BurnoutAnalyzer {
     }
   }
 
-  _extractRecommendations(aiInsights) {
+  _extractRecommendations(aiInsights: string): string[] {
     // Simple extraction of recommendations from AI insights
     // This could be enhanced with more sophisticated parsing
-    const recommendations = [];
+    const recommendations: string[] = [];
     const lines = aiInsights.split('\n');
-    
     for (const line of lines) {
       if (line.includes('recommend') || line.includes('suggest') || line.includes('consider')) {
         recommendations.push(line.trim());
       }
     }
-
     return recommendations.slice(0, 3); // Return top 3 recommendations
   }
 }
 
-module.exports = new BurnoutAnalyzer(); 
+export default new BurnoutAnalyzer(); 

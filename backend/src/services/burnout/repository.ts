@@ -1,12 +1,10 @@
-const { AppDataSource } = require('../../data-source');
+import { AppDataSource } from '../../data-source';
 
 class BurnoutRepository {
-  constructor() {
-    this.burnoutScoreRepository = AppDataSource.getRepository('BurnoutScore');
-    this.stressPatternRepository = AppDataSource.getRepository('StressPattern');
-  }
+  private burnoutScoreRepository = AppDataSource.getRepository('BurnoutScore');
+  private stressPatternRepository = AppDataSource.getRepository('StressPattern');
 
-  async saveBurnoutScore(userId, data) {
+  async saveBurnoutScore(userId: string, data: any): Promise<any> {
     const burnoutScore = this.burnoutScoreRepository.create({
       userId,
       date: new Date(),
@@ -15,12 +13,11 @@ class BurnoutRepository {
       aiInsights: data.insights,
       recommendations: data.recommendations
     });
-
     return this.burnoutScoreRepository.save(burnoutScore);
   }
 
-  async saveStressPatterns(userId, patterns) {
-    const stressPatterns = patterns.map(pattern => 
+  async saveStressPatterns(userId: string, patterns: any[]): Promise<any> {
+    const stressPatterns = patterns.map(pattern =>
       this.stressPatternRepository.create({
         userId,
         patternType: pattern.type,
@@ -31,11 +28,10 @@ class BurnoutRepository {
         metadata: pattern
       })
     );
-
     return this.stressPatternRepository.save(stressPatterns);
   }
 
-  async getBurnoutHistory(userId, startDate, endDate) {
+  async getBurnoutHistory(userId: string, startDate: Date, endDate: Date): Promise<any[]> {
     return this.burnoutScoreRepository.find({
       where: {
         userId,
@@ -44,13 +40,11 @@ class BurnoutRepository {
           $lte: endDate
         }
       },
-      order: {
-        date: 'DESC'
-      }
+      order: { date: 'DESC' }
     });
   }
 
-  async getStressPatterns(userId, startDate, endDate) {
+  async getStressPatterns(userId: string, startDate: Date, endDate: Date): Promise<any[]> {
     return this.stressPatternRepository.find({
       where: {
         userId,
@@ -59,39 +53,30 @@ class BurnoutRepository {
           $lte: endDate
         }
       },
-      order: {
-        detectedAt: 'DESC'
-      }
+      order: { detectedAt: 'DESC' }
     });
   }
 
-  async getLatestBurnoutScore(userId) {
+  async getLatestBurnoutScore(userId: string): Promise<any> {
     return this.burnoutScoreRepository.findOne({
       where: { userId },
       order: { date: 'DESC' }
     });
   }
 
-  async getActiveStressPatterns(userId) {
+  async getActiveStressPatterns(userId: string): Promise<any[]> {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
     return this.stressPatternRepository.find({
       where: {
         userId,
-        detectedAt: {
-          $gte: thirtyDaysAgo
-        }
+        detectedAt: { $gte: thirtyDaysAgo }
       },
-      order: {
-        severity: 'DESC',
-        detectedAt: 'DESC'
-      }
+      order: { severity: 'DESC', detectedAt: 'DESC' }
     });
   }
 
-  _determineFrequency(pattern) {
-    // This is a simplified version - you might want to implement more sophisticated logic
+  private _determineFrequency(pattern: any): string {
     if (pattern.type === 'high-meeting-day') {
       return 'daily';
     } else if (pattern.type === 'back-to-back-meetings') {
@@ -107,4 +92,4 @@ class BurnoutRepository {
   }
 }
 
-module.exports = new BurnoutRepository(); 
+export default new BurnoutRepository(); 
