@@ -1,3 +1,8 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 const router = express.Router();
-// ... (convert the rest of the file to TypeScript, update all require to import, add types, and export default router at the end) ... 
+
+router.get('/', (req: Request, res: Response) => {
+  res.json({ message: 'Meetings endpoint (to be implemented)' });
+});
+
+export default router; 

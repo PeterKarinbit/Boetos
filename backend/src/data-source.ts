@@ -255,9 +255,9 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Initialize on module load - but make it optional for direct DB scripts
-if (process.env.SKIP_DB_INIT !== 'true') {
-  initializeDataSource().catch(error => {
-    logger.error('Failed to initialize Data Source after retries:', error);
-    // Don't exit here, let the app decide what to do
-  });
-} 
+// if (process.env.SKIP_DB_INIT !== 'true') {
+//   initializeDataSource().catch(error => {
+//     logger.error('Failed to initialize Data Source after retries:', error);
+//     // Don't exit here, let the app decide what to do
+//   });
+// } 

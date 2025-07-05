@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "build": "rimraf dist && tsc && copyfiles -u 1 src/**/*.json src/**/*.graphql src/**/*.gql dist/",
+    "build": "rimraf dist && tsc && copyfiles -u 1 src/**/*.json src/**/*.graphql src/**/*.gql src/**/*.js dist/",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
     "typeorm": "ts-node --transpile-only ./node_modules/typeorm/cli.js",

@@ -1,8 +1,12 @@
 import { AppDataSource } from '../../data-source';
 
 class BurnoutRepository {
-  private burnoutScoreRepository = AppDataSource.getRepository('BurnoutScore');
-  private stressPatternRepository = AppDataSource.getRepository('StressPattern');
+  private get burnoutScoreRepository() {
+    return AppDataSource.getRepository('BurnoutScore');
+  }
+  private get stressPatternRepository() {
+    return AppDataSource.getRepository('StressPattern');
+  }
 
   async saveBurnoutScore(userId: string, data: any): Promise<any> {
     const burnoutScore = this.burnoutScoreRepository.create({
