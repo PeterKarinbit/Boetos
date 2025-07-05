@@ -1,15 +1,14 @@
-require('dotenv/config');
-require('reflect-metadata');
-const app = require('./app');
-const config = require('./config');
-const { initializeDataSource } = require('./data-source');
-const logger = require('./utils/logger');
+import 'dotenv/config';
+import 'reflect-metadata';
+import app from './app';
+import config from './config';
+import { initializeDataSource } from './data-source';
+import logger from './utils/logger';
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const burnoutRoutes = require('./routes/burnout');
+// Import routes (if needed for side effects)
+import './routes/auth';
+import './routes/burnout';
 
-// Ensure PORT is a number
 const PORT = process.env.PORT || 4001;
 
 async function startServer() {
@@ -41,4 +40,4 @@ async function startServer() {
   }
 }
 
-startServer();
+startServer(); 
