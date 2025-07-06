@@ -5,10 +5,10 @@ import { isTokenExpired, isTokenAboutToExpire } from '../utils/tokenUtils';
 const getBackendUrl = () => {
   // In production, use the deployed backend URL
   if (import.meta.env.PROD) {
-    return import.meta.env.VITE_BACKEND_URL || 'https://your-backend-app.onrender.com';
+    return import.meta.env.VITE_API_URL || 'https://your-backend-app.onrender.com';
   }
   // In development, use localhost
-  return import.meta.env.VITE_BACKEND_URL || 'http://localhost:4001';
+  return import.meta.env.VITE_API_URL || 'http://localhost:4001';
 };
 
 // Function to refresh token

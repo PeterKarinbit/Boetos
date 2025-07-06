@@ -728,7 +728,7 @@ export default function CalendarView() {
               </div>
               <button
                 className="bg-blue-600/20 backdrop-blur-sm text-blue-600 dark:text-blue-400 px-6 py-3 rounded-2xl hover:bg-blue-600/30 transition-all duration-300 font-semibold border border-blue-600/30 shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                onClick={() => window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/oauth/google`}
+                onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/api/oauth/google`}
                 disabled={loading}
               >
                 {loading ? 'Connecting...' : '🔗 Connect Google Calendar'}

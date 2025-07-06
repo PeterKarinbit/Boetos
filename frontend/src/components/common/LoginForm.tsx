@@ -18,7 +18,7 @@ const LoginForm = () => {
     setError(null);
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,7 +95,7 @@ const LoginForm = () => {
       </div>
       <Button
         type="button"
-        onClick={() => { window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/oauth/google`; }}
+        onClick={() => { window.location.href = `${import.meta.env.VITE_API_URL}/api/oauth/google`; }}
         className="flex items-center justify-center gap-2 bg-white/10 text-[#FF6A00] hover:bg-white/20"
       >
         <svg width="20" height="20" viewBox="0 0 48 48" className="inline-block mr-2"><g><path fill="#FFC107" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.3-5.7 7-10.3 7-6.1 0-11-4.9-11-11s4.9-11 11-11c2.6 0 5 .9 6.9 2.6l6.6-6.6C34.5 6.5 29.7 4.5 24 4.5 12.7 4.5 3.5 13.7 3.5 25S12.7 45.5 24 45.5c10.5 0 19.5-8.5 19.5-19 0-1.3-.1-2.2-.3-3z"/><path fill="#FF3D00" d="M6.3 14.1l6.6 4.8C15.1 16.1 19.2 13.5 24 13.5c2.6 0 5 .9 6.9 2.6l6.6-6.6C34.5 6.5 29.7 4.5 24 4.5c-7.1 0-13.2 3.7-16.7 9.6z"/><path fill="#4CAF50" d="M24 45.5c5.4 0 10.3-1.8 14.1-4.9l-6.5-5.3c-2 1.4-4.5 2.2-7.6 2.2-4.6 0-8.7-2.7-10.3-7H6.2v5.6C9.7 41.3 16.3 45.5 24 45.5z"/><path fill="#1976D2" d="M43.6 20.5h-1.9V20H24v8h11.3c-0.7 2-2.1 3.7-3.9 4.9l6.5 5.3c-1.8 1.7-4.1 3.1-6.9 3.8V45.5c10.5 0 19.5-8.5 19.5-19 0-1.3-.1-2.2-.3-3z"/></g></svg>
