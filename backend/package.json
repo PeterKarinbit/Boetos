@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "build": "rm -rf dist && prisma generate && tsc && copyfiles src/**/*.json src/**/*.graphql src/**/*.gql src/**/*.js src/**/*.ts dist/ && copyfiles -a src/utils dist/ && copyfiles prisma dist/ && npm run check-dist-utils",
+    "build": "rm -rf dist && mkdir -p dist/utils && prisma generate && tsc && copyfiles src/**/*.json src/**/*.graphql src/**/*.gql src/**/*.js src/**/*.ts dist/ && copyfiles src/utils/* dist/utils/ && copyfiles prisma dist/ && npm run check-dist-utils",
     "check-dist-utils": "ls -l dist/utils || dir dist\\utils",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
