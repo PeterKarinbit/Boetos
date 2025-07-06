@@ -5,6 +5,6 @@ interface Logger {
   debug: (message: string, ...meta: any[]) => void;
 }
 
-const logger: Logger;
+declare const logger: Logger;
 
-export default logger;
+export = logger;

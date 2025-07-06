@@ -4,7 +4,7 @@ import { DataSource, DataSourceOptions, QueryRunner, LoggerOptions } from 'typeo
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import path from 'path';
 import { config } from './config/index';
-import logger from './utils/logger';
+import logger = require('./utils/logger');
 
 // Validate required environment variables
 const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASS', 'DB_NAME'];
