@@ -4,7 +4,50 @@ import { DataSource, DataSourceOptions, QueryRunner, LoggerOptions } from 'typeo
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import path from 'path';
 import { config } from './config/index';
-import logger = require('./utils/logger');
+// import logger = require('./utils/logger');
+
+// --- Inlined logger code ---
+const winston = require('winston');
+const DailyRotateFile = require('winston-daily-rotate-file');
+
+const logFormat = winston.format.combine(
+  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  winston.format.printf(
+    (info) => `[${info.timestamp}] [${info.level.toUpperCase()}]: ${info.message}`
+  )
+);
+
+const logger = winston.createLogger({
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  format: logFormat,
+  transports: [
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        logFormat
+      )
+    }),
+    new DailyRotateFile({
+      filename: 'application-%DATE%.log',
+      dirname: 'logs',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d',
+      level: 'info'
+    }),
+    new DailyRotateFile({
+      filename: 'error-%DATE%.log',
+      dirname: 'logs',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d',
+      level: 'error'
+    })
+  ],
+});
+// --- End inlined logger code ---
 
 // Validate required environment variables
 const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASS', 'DB_NAME'];
