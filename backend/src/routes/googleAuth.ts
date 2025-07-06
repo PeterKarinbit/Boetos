@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { User } from '../entities/User';
 import { initializeDataSource } from '../data-source';

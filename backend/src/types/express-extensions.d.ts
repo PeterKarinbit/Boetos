@@ -2,7 +2,7 @@ import { User as CustomUser } from '../entities/User';
 
 declare global {
   namespace Express {
-    export interface Request {
+    interface Request {
       user?: CustomUser;
     }
   }
