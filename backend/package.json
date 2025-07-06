@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "build": "rimraf dist && prisma generate && tsc && copyfiles -u 1 src/**/*.json src/**/*.graphql src/**/*.gql src/**/*.js dist/ && copyfiles -u 1 prisma dist/",
+    "build": "rm -rf dist && prisma generate && tsc && copyfiles -u 1 src/**/*.json src/**/*.graphql src/**/*.gql src/**/*.js dist/ && copyfiles -u 1 prisma dist/",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
     "typeorm": "ts-node --transpile-only ./node_modules/typeorm/cli.js",
@@ -43,7 +43,8 @@
     "resend": "^4.6.0",
     "typeorm": "^0.3.25",
     "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "copyfiles": "^2.4.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -57,9 +58,7 @@
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/pg": "^8.11.11",
-    "copyfiles": "^2.4.1",
     "nodemon": "^3.1.0",
-    "rimraf": "^6.0.1",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
