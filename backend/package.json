@@ -46,7 +46,8 @@
     "resend": "^4.6.0",
     "typeorm": "^0.3.25",
     "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "rimraf": "^5.0.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
