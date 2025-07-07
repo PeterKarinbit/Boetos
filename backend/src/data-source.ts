@@ -77,6 +77,7 @@ const getSslConfig = () => {
 
 const skipMigrations = process.env.SKIP_MIGRATIONS === 'true';
 
+console.log('[DEBUG] data-source.ts: Before DataSourceOptions definition');
 const dataSourceOptions: PostgresConnectionOptions = {
   type: 'postgres',
   url: process.env.DATABASE_URL,
@@ -111,10 +112,12 @@ const dataSourceOptions: PostgresConnectionOptions = {
     },
   },
 };
+console.log('[DEBUG] data-source.ts: After DataSourceOptions definition');
 
 let isInitialized = false;
 let isInitializing = false;
 
+console.log('[DEBUG] data-source.ts: Before checkConnection definition');
 const checkConnection = async (): Promise<boolean> => {
   if (!AppDataSource?.isInitialized) {
     logger.info('checkConnection: DataSource not initialized');
@@ -139,41 +142,40 @@ const checkConnection = async (): Promise<boolean> => {
     return false;
   }
 };
+console.log('[DEBUG] data-source.ts: After checkConnection definition');
 
 export const initializeDataSource = async (): Promise<DataSource> => {
+  console.log('[DEBUG] data-source.ts: Entered initializeDataSource');
   if (isInitialized && await checkConnection()) {
-    logger.info('initializeDataSource: Already initialized and connection is healthy');
+    console.log('[DEBUG] data-source.ts: Already initialized and connection is healthy');
     return AppDataSource;
   }
   
   // Ensure we have a valid data source
   if (!AppDataSource) {
+    console.log('[DEBUG] data-source.ts: AppDataSource not initialized');
     throw new Error('Data source not properly initialized');
   }
 
   if (isInitializing) {
-    logger.info('initializeDataSource: Already initializing, waiting...');
+    console.log('[DEBUG] data-source.ts: Already initializing, waiting...');
     while (isInitializing) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    logger.info('initializeDataSource: Initialization finished by another process');
+    console.log('[DEBUG] data-source.ts: Initialization finished by another process');
     return AppDataSource;
   }
 
   isInitializing = true;
-  logger.info('initializeDataSource: Starting initialization');
+  console.log('[DEBUG] data-source.ts: Starting initialization');
 
   // If already initialized but connection is dead, destroy and re-initialize
   if (AppDataSource.isInitialized) {
           try {
-        logger.info('initializeDataSource: Destroying existing connection');
+        console.log('[DEBUG] data-source.ts: Destroying existing connection');
         await AppDataSource.destroy();
       } catch (error) {
-        if (error instanceof Error) {
-          logger.warn('Error destroying existing connection:', error.message);
-        } else {
-          logger.warn('Error destroying existing connection:', error);
-        }
+        console.log('[DEBUG] data-source.ts: Error destroying existing connection', error);
       }
     isInitialized = false;
   }
@@ -182,9 +184,9 @@ export const initializeDataSource = async (): Promise<DataSource> => {
   while (retries > 0) {
     try {
       if (!AppDataSource.isInitialized) {
-        logger.info('initializeDataSource: Initializing AppDataSource');
+        console.log('[DEBUG] data-source.ts: Initializing AppDataSource');
         await AppDataSource.initialize();
-        logger.info('Data Source has been initialized!');
+        console.log('[DEBUG] data-source.ts: Data Source has been initialized!');
         // Verify connection is working
         if (!(await checkConnection())) {
           throw new Error('Connection verification failed after initialization');
@@ -193,34 +195,30 @@ export const initializeDataSource = async (): Promise<DataSource> => {
         try {
           const pendingMigrations = await AppDataSource.showMigrations();
           if (pendingMigrations) {
-            logger.info('Running pending migrations...');
+            console.log('[DEBUG] data-source.ts: Running pending migrations...');
             const migrations = await AppDataSource.runMigrations();
             if (migrations.length > 0) {
-              logger.info(`Successfully executed ${migrations.length} migrations`);
+              console.log(`[DEBUG] data-source.ts: Successfully executed ${migrations.length} migrations`);
             } else {
-              logger.info('No pending migrations to execute');
+              console.log('[DEBUG] data-source.ts: No pending migrations to execute');
             }
           } else {
-            logger.info('No pending migrations found');
+            console.log('[DEBUG] data-source.ts: No pending migrations found');
           }
         } catch (runMigrationError: unknown) {
-          if (runMigrationError instanceof Error) {
-            logger.error('Error running migrations:', runMigrationError.message);
-          } else {
-            logger.error('Unknown error running migrations');
-          }
+          console.log('[DEBUG] data-source.ts: Error running migrations', runMigrationError);
           const errorMessage = runMigrationError instanceof Error ? runMigrationError.message : 'Unknown error';
           logger.error('Failed to run migrations:', errorMessage);
           // Don't throw here, let the application continue
         }
         isInitialized = true;
       }
-      logger.info('initializeDataSource: Initialization complete');
+      console.log('[DEBUG] data-source.ts: Initialization complete');
       isInitializing = false;
       return AppDataSource;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Error during data source initialization:', errorMessage);
+      console.log('[DEBUG] data-source.ts: Error during data source initialization', error);
       throw error;
     }
   }
