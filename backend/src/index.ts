@@ -1,10 +1,12 @@
 import 'dotenv/config';
 import app from './app';
+import { initializeDataSource } from './data-source';
 
 const PORT = process.env.PORT || 4001;
 
 async function startServer() {
   try {
+    await initializeDataSource(); // Ensure TypeORM is initialized before handling requests
     // Start the server
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
