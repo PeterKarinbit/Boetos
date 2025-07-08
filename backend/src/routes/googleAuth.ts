@@ -1,8 +1,8 @@
 import express from 'express';
 import type { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
-import { User } from '../entities/User';
-import { initializeDataSource } from '../data-source';
+import { User } from '../entities/User.js';
+import { initializeDataSource } from '../data-source.js';
 import jwt from 'jsonwebtoken';
 
 const router = express.Router();

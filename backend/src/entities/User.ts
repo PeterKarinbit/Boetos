@@ -1,9 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { UserPreferences } from './UserPreferences';
-import { UserVoiceSettings } from './UserVoiceSettings';
-import { Activity } from './Activity';
-import { Meeting } from './Meeting';
-import { AiInterventionRule } from './AiInterventionRule';
+import { UserPreferences } from './UserPreferences.js';
+import { UserVoiceSettings } from './UserVoiceSettings.js';
+import { Activity } from './Activity.js';
+import { Meeting } from './Meeting.js';
+import { AiInterventionRule } from './AiInterventionRule.js';
 
 @Entity('users')
 export class User {

@@ -1,6 +1,6 @@
 import 'dotenv/config';
-import app from './app';
-import { initializeDataSource } from './data-source';
+import app from './app.js';
+import { initializeDataSource } from './data-source.js';
 
 const PORT = process.env.PORT || 4001;
 

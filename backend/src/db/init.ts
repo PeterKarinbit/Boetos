@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import { dataSource } from '../data-source-new';
-import { User } from '../entities/User';
-import { UserPreferences } from '../entities/UserPreferences';
-import { AiInterventionRule } from '../entities/AiInterventionRule';
+import { dataSource } from '../data-source-new.js';
+import { User } from '../entities/User.js';
+import { UserPreferences } from '../entities/UserPreferences.js';
+import { AiInterventionRule } from '../entities/AiInterventionRule.js';
 
 // Re-export types for convenience
 export type { User, UserPreferences, AiInterventionRule };

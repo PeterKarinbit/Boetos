@@ -1,6 +1,6 @@
-import { prisma } from '../lib/prisma';
-import { OpenViewerClient } from '../lib/openviewer';
-import { BurnoutCalculator } from '../lib/burnoutCalculator';
+import { prisma } from '../lib/prisma.js';
+import { OpenViewerClient } from '../lib/openviewer.js';
+import { BurnoutCalculator } from '../lib/burnoutCalculator.js';
 // import { BurnoutCalculator } from '../lib/burnoutCalculator'; // TODO: Implement or restore this module if needed
 
 const openviewer = new OpenViewerClient({

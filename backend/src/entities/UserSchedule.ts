@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { User } from './User';
+import { User } from './User.js';
 
 @Entity('user_schedule')
 export class UserSchedule {

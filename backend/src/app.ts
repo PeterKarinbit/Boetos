@@ -1,20 +1,20 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 
 // Import routers
-import authRouter from './routes/auth';
-import googleAuthRouter from './routes/googleAuth';
-import activityRouter from './routes/activity';
-import burnoutRouter from './routes/burnout';
-import calendarRouter from './routes/calendar';
-import meetingsRouter from './routes/meetings';
-import memoryRouter from './routes/memory';
-import mentalHealthRouter from './routes/mentalHealth';
-import notificationsRouter from './routes/notifications';
-import sidekickRouter from './routes/sidekick';
-import userRouter from './routes/user';
-import voiceRouter from './routes/voice';
-import voiceAssistantRouter from './routes/voice-assistant';
+import authRouter from './routes/auth.js';
+import googleAuthRouter from './routes/googleAuth.js';
+import activityRouter from './routes/activity.js';
+import burnoutRouter from './routes/burnout.js';
+import calendarRouter from './routes/calendar.js';
+import meetingsRouter from './routes/meetings.js';
+import memoryRouter from './routes/memory.js';
+import mentalHealthRouter from './routes/mentalHealth.js';
+import notificationsRouter from './routes/notifications.js';
+import sidekickRouter from './routes/sidekick.js';
+import userRouter from './routes/user.js';
+import voiceRouter from './routes/voice.js';
+import voiceAssistantRouter from './routes/voice-assistant.js';
 
 const app = express();
 
@@ -60,7 +60,7 @@ app.get('/', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ 
     success: false,

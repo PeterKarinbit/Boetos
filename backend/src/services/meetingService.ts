@@ -1,5 +1,5 @@
-import { CalendarService } from './calendarService';
-import { UserSchedule } from '../entities/UserSchedule';
+import { CalendarService } from './calendarService.js';
+import { UserSchedule } from '../entities/UserSchedule.js';
 
 // Mock traffic/location service for now
 const getTravelTime = async (origin: string, destination: string): Promise<number> => {

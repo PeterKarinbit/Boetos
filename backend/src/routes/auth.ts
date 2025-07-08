@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response } from 'express';
-import { AppDataSource } from '../data-source';
-import { User } from '../entities/User';
+import { AppDataSource } from '../data-source.js';
+import { User } from '../entities/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 const router = express.Router();
