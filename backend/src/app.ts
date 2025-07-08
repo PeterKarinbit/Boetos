@@ -1,5 +1,4 @@
 import express from 'express';
-import type { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 
 // Import routers
@@ -17,7 +16,7 @@ import userRouter from './routes/user';
 import voiceRouter from './routes/voice';
 import voiceAssistantRouter from './routes/voice-assistant';
 
-const app: Application = express();
+const app = express();
 
 // CORS configuration for Netlify frontend
 app.use(cors({
@@ -45,7 +44,7 @@ app.use('/api/voice', voiceRouter);
 app.use('/api/voice-assistant', voiceAssistantRouter);
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString()
@@ -53,7 +52,7 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Root endpoint
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to the Boetos API!',
     version: process.env.npm_package_version || '1.0.0'
@@ -61,9 +60,23 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Error handling middleware
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Something broke!' });
+  res.status(500).json({ 
+    success: false,
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ 
+    success: false, 
+    message: 'Route not found' 
+  });
 });
 
 export default app;
+
+module.exports = app;

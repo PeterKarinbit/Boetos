@@ -2,8 +2,10 @@
   "name": "boetos-backend",
   "version": "1.0.0",
   "description": "Backend for Boetos burnout tracking engine",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "type": "module",
   "license": "MIT",
+
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "rimraf dist && prisma generate && tsc && npx mkdirp dist/utils && npx copyfiles src/utils/logger.js dist/utils/ && npx copyfiles src/utils/* dist/utils/ && copyfiles src/config/*.json dist/config/ && copyfiles src/**/*.graphql src/**/*.gql dist/ && copyfiles prisma dist/ && npm run check-dist-utils",
