@@ -1,4 +1,4 @@
-import { initializeDatabase } from './init';
+import { initializeDatabase } from './init.js';
 
 (async () => {
   try {

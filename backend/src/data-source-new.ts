@@ -2,7 +2,7 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import path from 'path';
-import { config } from './config/index';
+import { config } from './config/index.js';
 import logger = require('./utils/logger');
 
 // TypeORM ConnectionOptions for PostgreSQL

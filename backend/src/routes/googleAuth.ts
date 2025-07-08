@@ -53,20 +53,20 @@ router.get('/callback', async (req: Request, res: Response) => {
     let user = await userRepo.findOne({ where: { email: payload.email } });
     if (!user) {
       user = userRepo.create({
-        email: payload.email,
-        name: payload.name,
+        email: payload.email ?? undefined,
+        name: payload.name ?? undefined,
         google_id: payload.sub,
         profileImage: payload.picture,
-        email_verified: payload.email_verified,
+        email_verified: !!payload.email_verified,
       });
     } else {
       user.google_id = payload.sub;
-      user.name = payload.name;
+      user.name = payload.name ?? undefined;
       user.profileImage = payload.picture;
-      user.email_verified = payload.email_verified;
+      user.email_verified = !!payload.email_verified;
     }
-    user.google_access_token = tokens.access_token;
-    user.google_refresh_token = tokens.refresh_token;
+    user.google_access_token = tokens.access_token === null || tokens.access_token === undefined ? undefined : tokens.access_token;
+    user.google_refresh_token = tokens.refresh_token === null || tokens.refresh_token === undefined ? undefined : tokens.refresh_token;
     await userRepo.save(user);
     // Issue JWT
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });

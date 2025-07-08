@@ -1,9 +1,8 @@
 import 'dotenv/config';
 import 'reflect-metadata';
 import { DataSource, DataSourceOptions, QueryRunner, LoggerOptions } from 'typeorm';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import path from 'path';
-import { config } from './config/index';
+import { config } from './config/index.js';
 // import logger = require('./utils/logger');
 
 // --- Inlined logger code ---
@@ -13,7 +12,7 @@ const DailyRotateFile = require('winston-daily-rotate-file');
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.printf(
-    (info) => `[${info.timestamp}] [${info.level.toUpperCase()}]: ${info.message}`
+    (info: any) => `[${info.timestamp}] [${info.level.toUpperCase()}]: ${info.message}`
   )
 );
 
@@ -78,7 +77,7 @@ const getSslConfig = () => {
 const skipMigrations = process.env.SKIP_MIGRATIONS === 'true';
 
 console.log('[DEBUG] data-source.ts: Before DataSourceOptions definition');
-const dataSourceOptions: PostgresConnectionOptions = {
+const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   url: process.env.DATABASE_URL,
   ssl: getSslConfig(),
@@ -304,20 +303,20 @@ process.on('unhandledRejection', (reason, promise) => {
 // } 
 
 console.log('[DEBUG] Importing User entity');
-import { User } from './entities/User';
+import { User } from './entities/User.js';
 console.log('[DEBUG] Imported User entity');
 console.log('[DEBUG] Importing UserPreferences entity');
-import { UserPreferences } from './entities/UserPreferences';
+import { UserPreferences } from './entities/UserPreferences.js';
 console.log('[DEBUG] Imported UserPreferences entity');
 console.log('[DEBUG] Importing UserVoiceSettings entity');
-import { UserVoiceSettings } from './entities/UserVoiceSettings';
+import { UserVoiceSettings } from './entities/UserVoiceSettings.js';
 console.log('[DEBUG] Imported UserVoiceSettings entity');
 console.log('[DEBUG] Importing Activity entity');
-import { Activity } from './entities/Activity';
+import { Activity } from './entities/Activity.js';
 console.log('[DEBUG] Imported Activity entity');
 console.log('[DEBUG] Importing Meeting entity');
-import { Meeting } from './entities/Meeting';
+import { Meeting } from './entities/Meeting.js';
 console.log('[DEBUG] Imported Meeting entity');
 console.log('[DEBUG] Importing AiInterventionRule entity');
-import { AiInterventionRule } from './entities/AiInterventionRule';
+import { AiInterventionRule } from './entities/AiInterventionRule.js';
 console.log('[DEBUG] Imported AiInterventionRule entity'); 
