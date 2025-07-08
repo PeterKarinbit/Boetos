@@ -302,3 +302,22 @@ process.on('unhandledRejection', (reason, promise) => {
 //     // Don't exit here, let the app decide what to do
 //   });
 // } 
+
+console.log('[DEBUG] Importing User entity');
+import { User } from './entities/User';
+console.log('[DEBUG] Imported User entity');
+console.log('[DEBUG] Importing UserPreferences entity');
+import { UserPreferences } from './entities/UserPreferences';
+console.log('[DEBUG] Imported UserPreferences entity');
+console.log('[DEBUG] Importing UserVoiceSettings entity');
+import { UserVoiceSettings } from './entities/UserVoiceSettings';
+console.log('[DEBUG] Imported UserVoiceSettings entity');
+console.log('[DEBUG] Importing Activity entity');
+import { Activity } from './entities/Activity';
+console.log('[DEBUG] Imported Activity entity');
+console.log('[DEBUG] Importing Meeting entity');
+import { Meeting } from './entities/Meeting';
+console.log('[DEBUG] Imported Meeting entity');
+console.log('[DEBUG] Importing AiInterventionRule entity');
+import { AiInterventionRule } from './entities/AiInterventionRule';
+console.log('[DEBUG] Imported AiInterventionRule entity'); 
