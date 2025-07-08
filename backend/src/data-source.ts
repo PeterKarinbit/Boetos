@@ -3,11 +3,13 @@ import 'reflect-metadata';
 import { DataSource, DataSourceOptions, QueryRunner, LoggerOptions } from 'typeorm';
 import path from 'path';
 import { config } from './config/index.js';
-// import logger = require('./utils/logger');
+import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import { fileURLToPath } from 'url';
+import { entities } from './entities/entities.js';
 
-// --- Inlined logger code ---
-const winston = require('winston');
-const DailyRotateFile = require('winston-daily-rotate-file');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
@@ -46,7 +48,6 @@ const logger = winston.createLogger({
     })
   ],
 });
-// --- End inlined logger code ---
 
 // Validate required environment variables
 const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASS', 'DB_NAME'];
@@ -81,9 +82,7 @@ const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   url: process.env.DATABASE_URL,
   ssl: getSslConfig(),
-  entities: [
-    path.join(__dirname, 'entities', '*.{js,ts}')
-  ],
+  entities: entities,
   synchronize: false, // Disable auto-synchronization
   migrationsRun: !skipMigrations, // Only run migrations if not skipping
   logging: false, // Use only allowed TypeORM values for logging
@@ -302,21 +301,4 @@ process.on('unhandledRejection', (reason, promise) => {
 //   });
 // } 
 
-console.log('[DEBUG] Importing User entity');
-import { User } from './entities/User.js';
-console.log('[DEBUG] Imported User entity');
-console.log('[DEBUG] Importing UserPreferences entity');
-import { UserPreferences } from './entities/UserPreferences.js';
-console.log('[DEBUG] Imported UserPreferences entity');
-console.log('[DEBUG] Importing UserVoiceSettings entity');
-import { UserVoiceSettings } from './entities/UserVoiceSettings.js';
-console.log('[DEBUG] Imported UserVoiceSettings entity');
-console.log('[DEBUG] Importing Activity entity');
-import { Activity } from './entities/Activity.js';
-console.log('[DEBUG] Imported Activity entity');
-console.log('[DEBUG] Importing Meeting entity');
-import { Meeting } from './entities/Meeting.js';
-console.log('[DEBUG] Imported Meeting entity');
-console.log('[DEBUG] Importing AiInterventionRule entity');
-import { AiInterventionRule } from './entities/AiInterventionRule.js';
-console.log('[DEBUG] Imported AiInterventionRule entity'); 
+// Remove all console.log statements at the bottom referencing entity imports 

@@ -9,16 +9,16 @@ export class UserVoiceSettings {
   @Column({ type: 'uuid', nullable: false })
   user_id!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   voice_model?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   voice_id?: string;
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   voice_enabled!: boolean;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   voice_language?: string;
 
   @Column({ type: 'float', default: 1.0 })
@@ -30,19 +30,19 @@ export class UserVoiceSettings {
   @Column({ type: 'float', default: 1.0 })
   voice_volume!: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   voice_gender?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   voice_accent?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   voice_style?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   voice_emotion?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   voice_background?: string;
 
   @CreateDateColumn()
@@ -51,9 +51,9 @@ export class UserVoiceSettings {
   @UpdateDateColumn()
   updated_at!: Date;
 
-  @OneToOne(() => User, user => user.voiceSettings)
+  @OneToOne('User', 'voiceSettings')
   @JoinColumn({ name: 'user_id' })
-  user?: User;
+  user?: any;
 
   setUser(user: User): void {
     this.user = user;

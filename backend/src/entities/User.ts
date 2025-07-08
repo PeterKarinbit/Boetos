@@ -67,19 +67,19 @@ export class User {
   @Column({ type: 'uuid', nullable: true })
   voice_settings_id?: string;
 
-  @OneToOne(() => UserPreferences, preferences => preferences.user)
+  @OneToOne('UserPreferences', 'user')
   preferencesRelation?: UserPreferences;
 
-  @OneToOne(() => UserVoiceSettings, voiceSettings => voiceSettings.user)
+  @OneToOne('UserVoiceSettings', 'user')
   voiceSettings?: UserVoiceSettings;
 
-  @OneToMany(() => Activity, activity => activity.user)
+  @OneToMany('Activity', 'user')
   activities?: Activity[];
 
-  @OneToMany(() => Meeting, meeting => meeting.user)
+  @OneToMany('Meeting', 'user')
   meetings?: Meeting[];
 
-  @OneToMany(() => AiInterventionRule, rule => rule.user)
+  @OneToMany('AiInterventionRule', 'user')
   aiInterventionRules?: AiInterventionRule[];
 
   setPreferences(preferences: UserPreferences): void {

@@ -1,6 +1,6 @@
-const { EntitySchema } = require('typeorm');
+import { EntitySchema } from 'typeorm';
 
-module.exports = new EntitySchema({
+export const ChatMessage = new EntitySchema({
   name: 'ChatMessage',
   tableName: 'chat_messages',
   columns: {
@@ -13,5 +13,4 @@ module.exports = new EntitySchema({
   },
 });
 
-// For TypeScript/ESM compatibility
-module.exports.default = module.exports; 
+export default ChatMessage; 
