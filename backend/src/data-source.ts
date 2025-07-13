@@ -8,6 +8,7 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import { entities } from './entities/entities.js';
 import { fileURLToPath } from 'url';
 
+// ESM-compatible __filename and __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

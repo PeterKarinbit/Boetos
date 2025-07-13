@@ -50,14 +50,10 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     const token = localStorage.getItem('token');
-    console.log('[DEBUG] Axios sending token:', token); // Debug log
-    // Add debug log for outgoing request
-    console.log('[DEBUG] Axios request URL:', config.url);
-    
+    // Removed debug logs for token and Authorization header
     if (token) {
       // Check if token is expired before sending request
       if (isTokenExpired(token)) {
-        console.log('[DEBUG] Token expired, removing from localStorage');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         // Return a rejected promise to prevent the request from being sent
@@ -66,22 +62,16 @@ api.interceptors.request.use(
 
       // Check if token is about to expire and refresh it
       if (isTokenAboutToExpire(token)) {
-        console.log('[DEBUG] Token about to expire, refreshing...');
         const newToken = await refreshToken();
         if (newToken) {
           config.headers.Authorization = `Bearer ${newToken}`;
-          // Debug log for Authorization header
-          console.log('[DEBUG] Axios Authorization header:', config.headers.Authorization);
           return config;
         } else {
           // Token refresh failed, return rejected promise
           return Promise.reject(new Error('Token refresh failed'));
         }
       }
-      
       config.headers.Authorization = `Bearer ${token}`;
-      // Debug log for Authorization header
-      console.log('[DEBUG] Axios Authorization header:', config.headers.Authorization);
     }
     return config;
   },

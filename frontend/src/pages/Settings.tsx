@@ -227,11 +227,12 @@ const Settings: React.FC = () => {
   };
 
   // Custom toggle component
-  const Toggle: React.FC<{ checked: boolean; onChange: () => void; label: string, description?: string }> = ({ 
+  const Toggle: React.FC<{ checked: boolean; onChange: () => void; label: string, description?: string, disabled?: boolean }> = ({ 
     checked, 
     onChange, 
     label,
-    description
+    description,
+    disabled
   }) => (
     <div className="flex items-center justify-between py-4 border-b border-slate-300/50 dark:border-slate-700/50 last:border-b-0">
       <div>
@@ -242,7 +243,8 @@ const Settings: React.FC = () => {
         onClick={onChange}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 ${
           checked ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
-        }`}
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        disabled={disabled}
       >
         <span
           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
@@ -351,9 +353,10 @@ const Settings: React.FC = () => {
             />
             <Toggle
               checked={voiceSettings.wakeWord}
-              onChange={() => handleVoiceSettingChange('wakeWord')}
+              onChange={() => {}}
               label="Enable Wake Word"
-              description="Activate voice assistant with wake word."
+              description="Activate voice assistant with wake word (coming soon)"
+              disabled={true}
             />
             <div className="mt-6 space-y-4">
               <div>
