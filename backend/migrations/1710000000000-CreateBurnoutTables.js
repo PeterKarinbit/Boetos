@@ -1,9 +1,9 @@
-const { MigrationInterface, QueryRunner } = require('typeorm');
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-module.exports = class CreateBurnoutTables1710000000000 {
-  async up(queryRunner) {
+export default class CreateBurnoutTables1710000000000 implements MigrationInterface {
+  async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "burnout_score" (
+      CREATE TABLE IF NOT EXISTS "burnout_score" (
         "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         "userId" uuid NOT NULL,
         "date" TIMESTAMP NOT NULL,
@@ -15,9 +15,9 @@ module.exports = class CreateBurnoutTables1710000000000 {
         "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
       );
 
-      CREATE INDEX "IDX_BURNOUT_SCORE_USER_DATE" ON "burnout_score" ("userId", "date");
+      CREATE INDEX IF NOT EXISTS "IDX_BURNOUT_SCORE_USER_DATE" ON "burnout_score" ("userId", "date");
 
-      CREATE TABLE "stress_pattern" (
+      CREATE TABLE IF NOT EXISTS "stress_pattern" (
         "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         "userId" uuid NOT NULL,
         "patternType" varchar NOT NULL,
@@ -30,15 +30,15 @@ module.exports = class CreateBurnoutTables1710000000000 {
         "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
       );
 
-      CREATE INDEX "IDX_STRESS_PATTERN_USER_TYPE" ON "stress_pattern" ("userId", "patternType");
-      CREATE INDEX "IDX_STRESS_PATTERN_DETECTED_AT" ON "stress_pattern" ("detectedAt");
+      CREATE INDEX IF NOT EXISTS "IDX_STRESS_PATTERN_USER_TYPE" ON "stress_pattern" ("userId", "patternType");
+      CREATE INDEX IF NOT EXISTS "IDX_STRESS_PATTERN_DETECTED_AT" ON "stress_pattern" ("detectedAt");
     `);
   }
 
-  async down(queryRunner) {
+  async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       DROP TABLE IF EXISTS "burnout_score";
       DROP TABLE IF EXISTS "stress_pattern";
     `);
   }
-}; 
+} 

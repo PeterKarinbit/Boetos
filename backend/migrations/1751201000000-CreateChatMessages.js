@@ -1,5 +1,7 @@
-module.exports = {
-  async up(queryRunner) {
+import { MigrationInterface, QueryRunner } from 'typeorm';
+
+export default class CreateChatMessages1751201000000 implements MigrationInterface {
+  async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS chat_messages (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -10,8 +12,9 @@ module.exports = {
         session_id uuid
       );
     `);
-  },
-  async down(queryRunner) {
+  }
+
+  async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('DROP TABLE IF EXISTS chat_messages;');
   }
-}; 
+} 

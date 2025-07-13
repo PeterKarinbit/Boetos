@@ -1,7 +1,7 @@
-const { MigrationInterface, QueryRunner } = require('typeorm');
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-module.exports = class FixBurnoutScoreIndex1710000000001 {
-  async up(queryRunner) {
+export default class FixBurnoutScoreIndex1710000000001 implements MigrationInterface {
+  async up(queryRunner: QueryRunner): Promise<void> {
     try {
       // Check if the index exists
       const indexExists = await queryRunner.query(`
@@ -35,7 +35,7 @@ module.exports = class FixBurnoutScoreIndex1710000000001 {
     }
   }
 
-  async down(queryRunner) {
+  async down(queryRunner: QueryRunner): Promise<void> {
     try {
       await queryRunner.query(`DROP INDEX IF EXISTS "IDX_BURNOUT_SCORE_USER_DATE";`);
     } catch (error) {
@@ -43,4 +43,4 @@ module.exports = class FixBurnoutScoreIndex1710000000001 {
       throw error;
     }
   }
-}; 
+} 
