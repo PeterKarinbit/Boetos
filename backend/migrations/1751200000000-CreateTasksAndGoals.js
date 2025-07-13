@@ -1,5 +1,7 @@
-module.exports = {
-  async up(queryRunner) {
+import { MigrationInterface, QueryRunner } from 'typeorm';
+
+export default class CreateTasksAndGoals1751200000000 implements MigrationInterface {
+  async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS tasks (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -20,9 +22,10 @@ module.exports = {
         completed_at timestamp
       );
     `);
-  },
-  async down(queryRunner) {
+  }
+
+  async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('DROP TABLE IF EXISTS tasks;');
     await queryRunner.query('DROP TABLE IF EXISTS goals;');
   }
-}; 
+} 

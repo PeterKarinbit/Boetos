@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "Backend for Boetos burnout tracking engine",
   "main": "dist/index.js",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "rimraf dist && prisma generate && tsc && npx mkdirp dist/utils && npx copyfiles src/utils/logger.js dist/utils/ && npx copyfiles src/utils/* dist/utils/ && copyfiles src/config/*.json dist/config/ && copyfiles src/**/*.graphql src/**/*.gql dist/ && copyfiles prisma dist/ && npm run check-dist-utils",
-    "postbuild": "ls -l dist && find dist -type f",
+    "postbuild": "dir dist && dir /s /b dist",
     "check-dist-utils": "ls -l dist/utils || dir dist\\utils",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",

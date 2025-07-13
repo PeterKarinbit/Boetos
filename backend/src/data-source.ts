@@ -5,8 +5,8 @@ import path from 'path';
 import { config } from './config/index.js';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import { fileURLToPath } from 'url';
 import { entities } from './entities/entities.js';
+import { fileURLToPath } from 'url';
 
 // ESM-compatible __filename and __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -89,7 +89,7 @@ const dataSourceOptions: DataSourceOptions = {
   logging: false, // Use only allowed TypeORM values for logging
   dropSchema: false,
   migrations: skipMigrations ? [] : [
-    path.join(__dirname, '..', 'migrations', '*.{js,ts}') // Use top-level migrations directory
+    path.join(__dirname, '..', 'migrations', '*.js') // Only use compiled JS migrations
   ],
   extra: {
     // Connection pool settings for better resilience
