@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export default class CreateBurnoutTables1710000000000 implements MigrationInterface {
-  async up(queryRunner: QueryRunner): Promise<void> {
+export default class CreateBurnoutTables1710000000000 {
+  async up(queryRunner) {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "burnout_score" (
         "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -35,7 +35,7 @@ export default class CreateBurnoutTables1710000000000 implements MigrationInterf
     `);
   }
 
-  async down(queryRunner: QueryRunner): Promise<void> {
+  async down(queryRunner) {
     await queryRunner.query(`
       DROP TABLE IF EXISTS "burnout_score";
       DROP TABLE IF EXISTS "stress_pattern";

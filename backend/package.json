@@ -50,13 +50,13 @@
     "rimraf": "^5.0.0",
     "typeorm": "^0.3.25",
     "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
-  },
-  "devDependencies": {
+    "winston-daily-rotate-file": "^5.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
+    "@types/jsonwebtoken": "^9.0.10"
+  },
+  "devDependencies": {
     "@types/express-session": "^1.18.2",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.19.4",
     "@types/node-cron": "^3.0.11",

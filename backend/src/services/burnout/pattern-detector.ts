@@ -78,7 +78,7 @@ class PatternDetector {
 
   _findBackToBackMeetings(meetings: any[]): any[] {
     const backToBack: any[] = [];
-    const sortedMeetings = meetings.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+    const sortedMeetings = [...meetings].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
     for (let i = 1; i < sortedMeetings.length; i++) {
       const gap = (new Date(sortedMeetings[i].start).getTime() - new Date(sortedMeetings[i-1].end).getTime()) / (1000 * 60);
       if (gap < 15) {
@@ -90,10 +90,11 @@ class PatternDetector {
 
   _findShortBreaks(events: any[]): any[] {
     const shortBreaks: any[] = [];
-    for (let i = 1; i < events.length; i++) {
-      const gap = (new Date(events[i].start).getTime() - new Date(events[i-1].end).getTime()) / (1000 * 60);
+    const sortedEvents = [...events].sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+    for (let i = 1; i < sortedEvents.length; i++) {
+      const gap = (new Date(sortedEvents[i].start).getTime() - new Date(sortedEvents[i-1].end).getTime()) / (1000 * 60);
       if (gap < 15) {
-        shortBreaks.push({ between: [events[i-1], events[i]], duration: gap });
+        shortBreaks.push({ between: [sortedEvents[i-1], sortedEvents[i]], duration: gap });
       }
     }
     return shortBreaks;
